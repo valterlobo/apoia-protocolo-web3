@@ -1,0 +1,97 @@
+
+## UX/UI e Interface Web3 — APOIA PROTOCOL
+
+A confiança na Web3 é diretamente proporcional à clareza visual. Este repositório centraliza as diretrizes de design, a arquitetura de experiência do usuário (UX/UI) e a implementação do frontend do protocolo, adotando a filosofia **"Clean Dashboard"** e focando no feedback imediato e determinístico de transações e estados da blockchain.
+
+---
+
+###  Índice
+- [Filosofia de Design & UX](#-filosofia-de-design--ux)
+- [Diretrizes de Transparência Mandatórias](#%EF%B8%8F-diretrizes-de-transpar%C3%AAncia-mandat%C3%B3rias)
+- [Telas do Frontend (`apoia-protocol-frontend.html`)](#%EF%B8%8F-telas-do-frontend-apoia-protocol-frontendhtml)
+- [Como Executar](#-como-executar)
+- [Stack Tecnológica Sugerida](#%EF%B8%8F-stack-tecnol%C3%B3gica-sugerida)
+
+---
+
+###  Filosofia de Design & UX
+
+Para mitigar a ansiedade natural do usuário ao interagir com contratos inteligentes, nossa interface é guiada por dois pilares:
+1. **Clean Dashboard:** Interfaces minimalistas, livres de ruídos cognitivos, destacando apenas as informações críticas para a tomada de decisão financeira e de governança.
+2. **Feedback Imediato de Transações:** Ciclo de vida visual claro para qualquer chamada de função de escrita (Write functions):
+   $$\text{Aguardando Assinatura (Wallet)} \longrightarrow \text{Confirmando (Mempool)} \longrightarrow \text{Sucesso / Falha (On-chain)}$$
+
+---
+
+### Diretrizes de Transparência Mandatórias
+
+O frontend expõe dados determinísticos e validações rigorosas em nível de aplicação para garantir a máxima segurança:
+
+* **Home & Explorar:** Cards de campanhas equipados com *badges* de status explícitos (`Ativo` / `Em Auditoria` / `Reprovado`) e hiperlinks diretos para o explorador de blocos (Etherscan/Blockscout).
+* **Detalhes da Campanha:** Módulo de aporte com exibição em tempo real da cotação de ativos via Oráculo Chainlink e visibilidade transparente do *Timestamp* do oráculo para mitigar riscos de *stale data*.
+* **Dashboard & Portfólio:** Visualização e verificação de hashes IPFS contendo relatórios de progresso descentralizados, além do rastreamento visual preciso do estado de *vesting* do token **$AGT**.
+* **Governança:** Gráficos de barras reativos e em tempo real para acompanhamento do **Quórum Dual** (métrica combinada de tokens e carteiras únicas).
+* **Wizard de Criação de Campanhas:** Sistema de validação semântica estrita no client-side para impedir erros lógicos de input, tais como:
+    * Hard Cap
+    * Configuração de datas de encerramento retroativas ou inferiores ao tempo mínimo de gestação do bloco.
+
+---
+
+### Telas do Frontend (`apoia-protocol-frontend.html`)
+
+O arquivo autônomo `apoia-protocol-frontend.html` pode ser renderizado diretamente no navegador. Todas as **8 telas funcionam offline** com mock-ups dinâmicos de dados on-chain:
+
+| ID | Tela | Funcionalidades Principais | Componentes Web3 Integrados |
+| :---: | :--- | :--- | :--- |
+| **01** | **Home** | Métricas globais on-chain, ticker ao vivo do par `ETH/USD` e vitrine de campanhas em destaque. | Multi-call aggregates, Price Feeds |
+| **02** | **Explorar** | Mecanismo de busca em tempo real com filtros avançados por status, categoria e rede (Cross-chain). | Indexador local / Subgraph Client |
+| **03** | **Detalhes** | Visualização de progresso da arrecadação, tiers de recompensa baseados em **ERC-1155**, preview de aporte e leitura do oráculo Chainlink. | Smart Contract Read, IPFS Gateway |
+| **04** | **Dashboard** | Painel administrativo do proponente da campanha com gerenciamento de saques condicionais pós-meta. | Escrow / Timelock Interactions |
+| **05** | **Portfólio** | Galeria de NFTs de apoio, cronograma e liberação de *vesting* do **$AGT** e painel de *staking* com multiplicadores de fidelidade. | ERC-721/1155 Viewer, Vesting Vaults |
+| **06** | **Governança** | Listagem de propostas da DAO, interface de votação ponderada com quórum duplo e monitoramento de fila do *Timelock*. | Governor Alpha/Bravo, Voting |
+| **07** | **Tesouro** | Composição do fundo da DAO, fluxo histórico de entradas e saídas e links para os contratos inteligentes verificados. | Asset Management, Treasury Tracker |
+| **08** | **Criar Campanha** | *Wizard* guiado de 4 etapas para parametrização da campanha, validação matemática de *caps*, simulador de oráculo e simulação de *deploy*. | Factory Contract Predictor / Gas Est. |
+
+---
+
+###  Como Executar
+
+Por ser uma interface monolítica e otimizada para testes/demonstração rápidos, o frontend não exige instaladores de pacotes (`npm` / `yarn`).
+
+1. Clone este repositório:
+
+```bash
+   git clone [https://github.com/seu-usuario/seu-repositorio.git](https://github.com/seu-usuario/seu-repositorio.git)
+```
+
+1. Navegue até o arquivo da interface:
+
+   Bash
+
+   ```
+   cd seu-repositorio
+   ```
+
+2. Abra o arquivo diretamente no seu navegador homologado (Chrome, Brave, Firefox):
+
+   Bash
+
+   ```
+   # No macOS
+   open apoia-protocol-frontend.html
+   
+   # No Linux
+   xdg-open apoia-protocol-frontend.html
+   ```
+
+### Stack Tecnológica Sugerida
+
+Para a evolução deste protótipo monolítico para ambiente de produção, recomenda-se a seguinte arquitetura:
+
+- **Framework:** Next.js (React) ou Vue 3 para SPA reativa.
+
+- **Estilização:** TailwindCSS (mantendo a filosofia *Clean Dashboard* com modo escuro nativo).
+
+- **Conexão Web3:** Wagmi Hooks + Viem ou Ethers.js para gerenciamento de RPCs.
+
+- **Provedor de Carteiras:** RainbowKit ou Web3Modal para onboarding do usuário.
