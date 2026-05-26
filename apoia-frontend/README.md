@@ -6,11 +6,43 @@ A confiança na Web3 é diretamente proporcional à clareza visual. Este reposit
 ---
 
 ###  Índice
+- [Arquivos do Frontend](#-arquivos-do-frontend)
 - [Filosofia de Design & UX](#-filosofia-de-design--ux)
 - [Diretrizes de Transparência Mandatórias](#%EF%B8%8F-diretrizes-de-transpar%C3%AAncia-mandat%C3%B3rias)
 - [Telas do Frontend (`apoia-protocol-frontend.html`)](#%EF%B8%8F-telas-do-frontend-apoia-protocol-frontendhtml)
 - [Como Executar](#-como-executar)
+- [Integração com ethers.js](#-integração-com-ethersjs)
 - [Stack Tecnológica Sugerida](#%EF%B8%8F-stack-tecnol%C3%B3gica-sugerida)
+
+---
+
+###  📁 Arquivos do Frontend
+
+| Arquivo | Descrição | Status |
+|---------|-----------|--------|
+| **apoia-protocol-frontend.html** | Frontend completo com 8 telas, UI interativa, mock data | ✅ Completo |
+| **web3-integration.js** | Classes ethers.js: Web3Manager, CampaignManager, TokenManager, etc | ✅ Completo |
+| **FRONTEND-GUIDE.md** | Documentação completa com exemplos de integração | ✅ Completo |
+| **QUICK-START.html** | Guia rápido com exemplos prontos para colar e usar | ✅ Completo |
+| **README.md** | Este arquivo | ✅ Este |
+
+---
+
+### 🚀 Início Rápido
+
+1. **Abra o frontend no navegador:**
+   ```bash
+   open apoia-protocol-frontend.html
+   ```
+
+2. **Clique em "Conectar Wallet"** (MetaMask)
+
+3. **Explore as 8 telas:**
+   - Home, Explorar, Detalhes, Dashboard, Portfólio, Governança, Tesouro, Criar
+
+4. **Para integração avançada:**
+   - Leia [FRONTEND-GUIDE.md](FRONTEND-GUIDE.md)
+   - Veja exemplos em [QUICK-START.html](QUICK-START.html)
 
 ---
 
@@ -20,6 +52,51 @@ Para mitigar a ansiedade natural do usuário ao interagir com contratos intelige
 1. **Clean Dashboard:** Interfaces minimalistas, livres de ruídos cognitivos, destacando apenas as informações críticas para a tomada de decisão financeira e de governança.
 2. **Feedback Imediato de Transações:** Ciclo de vida visual claro para qualquer chamada de função de escrita (Write functions):
    $$\text{Aguardando Assinatura (Wallet)} \longrightarrow \text{Confirmando (Mempool)} \longrightarrow \text{Sucesso / Falha (On-chain)}$$
+
+---
+
+### 🔗 Integração com ethers.js
+
+O frontend utiliza **ethers.js v6** com classes reutilizáveis para interação com smart contracts.
+
+#### Setup
+
+```html
+<!-- Incluir ethers.js -->
+<script src="https://cdn.ethers.io/v6/ethers.umd.min.js"></script>
+
+<!-- Incluir integração -->
+<script src="web3-integration.js"></script>
+```
+
+#### Exemplo: Conectar e Contribuir
+
+```javascript
+const web3 = new Web3Manager();
+await web3.connectWallet();
+
+const campaignManager = new CampaignManager(web3);
+await campaignManager.contributeToCampaign(
+    '0x1234...5678',  // campaign address
+    0.5               // amount in ETH
+);
+```
+
+#### Classes Disponíveis
+
+- **Web3Manager** - Gerencia conexão com wallet
+- **CampaignManager** - Criar/contribuir campanhas
+- **TokenManager** - Transferir AGT, criar vesting
+- **StakingManager** - Fazer stake, resgatar rewards
+- **DAOManager** - Votar, criar propostas
+- **OracleManager** - Obter preço Chainlink
+- **TierManagerHelper** - Gerenciar NFTs ERC-1155
+
+#### Documentação Completa
+
+Para exemplos detalhados e casos de uso, veja:
+- [FRONTEND-GUIDE.md](FRONTEND-GUIDE.md) - Documentação completa
+- [QUICK-START.html](QUICK-START.html) - Exemplos prontos para usar
 
 ---
 
