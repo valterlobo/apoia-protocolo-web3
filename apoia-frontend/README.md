@@ -3,10 +3,14 @@
 
 A confiança na Web3 é diretamente proporcional à clareza visual. Este repositório centraliza as diretrizes de design, a arquitetura de experiência do usuário (UX/UI) e a implementação do frontend do protocolo, adotando a filosofia **"Clean Dashboard"** e focando no feedback imediato e determinístico de transações e estados da blockchain.
 
+**🌐 Status de Integração:** ✅ **INTEGRADO COM SEPOLIA**  
+Todos os smart contracts estão deployados e funcionando em Sepolia Testnet.
+
 ---
 
 ###  Índice
 - [Arquivos do Frontend](#-arquivos-do-frontend)
+- [Status de Integração Blockchain](#-status-de-integração-blockchain)
 - [Filosofia de Design & UX](#-filosofia-de-design--ux)
 - [Diretrizes de Transparência Mandatórias](#%EF%B8%8F-diretrizes-de-transpar%C3%AAncia-mandat%C3%B3rias)
 - [Telas do Frontend (`apoia-protocol-frontend.html`)](#%EF%B8%8F-telas-do-frontend-apoia-protocol-frontendhtml)
@@ -22,27 +26,83 @@ A confiança na Web3 é diretamente proporcional à clareza visual. Este reposit
 |---------|-----------|--------|
 | **apoia-protocol-frontend.html** | Frontend completo com 8 telas, UI interativa, mock data | ✅ Completo |
 | **web3-integration.js** | Classes ethers.js: Web3Manager, CampaignManager, TokenManager, etc | ✅ Completo |
+| **BLOCKCHAIN-INTEGRATION.md** | Guia de integração com Sepolia e smart contracts | ✅ NOVO |
+| **contract-addresses.json** | Endereços dos contratos em Sepolia | ✅ NOVO |
 | **FRONTEND-GUIDE.md** | Documentação completa com exemplos de integração | ✅ Completo |
 | **QUICK-START.html** | Guia rápido com exemplos prontos para colar e usar | ✅ Completo |
+| **IMPLEMENTATION-SUMMARY.md** | Resumo da implementação | ✅ Completo |
+| **INDEX.md** | Índice completo de todos os arquivos | ✅ Completo |
 | **README.md** | Este arquivo | ✅ Este |
 
 ---
 
-### 🚀 Início Rápido
+### 🌐 Status de Integração Blockchain
 
-1. **Abra o frontend no navegador:**
-   ```bash
-   open apoia-protocol-frontend.html
-   ```
+#### ✅ Smart Contracts Deployados em Sepolia (11155111)
 
-2. **Clique em "Conectar Wallet"** (MetaMask)
+| Contrato | Endereço | Verificado |
+|----------|----------|-----------|
+| **CampaignFactory** | `0xb385a9feeb0e4064bc7e2e4a89b6496e6864e8e7` | ✅ Etherscan |
+| **AGTToken** | `0xb9cc185e0aea3486e3915b04286618610a995d3a` | ✅ Etherscan |
+| **ApoiaDAO** | `0x5181bc4a74d252e1f10678a7e32ae91c8518061a` | ✅ Etherscan |
+| **StakingAGT** | `0x9dbefad6cd0c96b5e64f4b963d1b85bfac02c1ff` | ✅ Etherscan |
+| **TreasuryDAO** | `0x4780e8a81112e725741ac70e2d02a3c8ad04bfd5` | ✅ Etherscan |
+| **ChainlinkFeed (ETH/USD)** | `0x694AA1769357215DE4FAC081bf1f309aDC325306` | ✅ Chainlink |
 
-3. **Explore as 8 telas:**
-   - Home, Explorar, Detalhes, Dashboard, Portfólio, Governança, Tesouro, Criar
+#### ✅ Funcionalidades Integradas
 
-4. **Para integração avançada:**
-   - Leia [FRONTEND-GUIDE.md](FRONTEND-GUIDE.md)
-   - Veja exemplos em [QUICK-START.html](QUICK-START.html)
+- ✅ Criar campanhas de crowdfunding
+- ✅ Contribuir com ETH para campanhas
+- ✅ Fazer stake de tokens AGT com rewards
+- ✅ Votação na DAO com poder ponderado por stake
+- ✅ Oráculo Chainlink para preço ETH/USD
+- ✅ Treasury DAO para gestão de fundos
+- ✅ NFTs ERC-1155 para tiers
+
+---
+
+### 🚀 Início Rápido (5 Minutos)
+
+#### Opção 1: Apenas Visualizar (Sem Blockchain)
+
+```bash
+# Abra no navegador
+open apoia-protocol-frontend.html
+
+# Ou com servidor:
+python -m http.server 8000
+# Acesse: http://localhost:8000/apoia-protocol-frontend.html
+```
+
+#### Opção 2: Com Integração Sepolia (Recomendado)
+
+```bash
+# 1. Configure MetaMask para Sepolia
+# https://sepoliafaucet.com (obtenha ETH testnet)
+
+# 2. Inicie servidor local
+cd apoia-frontend/
+python -m http.server 8000
+
+# 3. Abra no navegador
+# http://localhost:8000/apoia-protocol-frontend.html
+
+# 4. Clique "Conectar Wallet" e comece a testar!
+```
+
+---
+
+### 📚 Documentação
+
+| Documento | Propósito |
+|-----------|----------|
+| **[BLOCKCHAIN-INTEGRATION.md](BLOCKCHAIN-INTEGRATION.md)** | 📖 Guia completo de integração com Sepolia |
+| **[FRONTEND-GUIDE.md](FRONTEND-GUIDE.md)** | 📖 Documentação técnica do frontend |
+| **[QUICK-START.html](QUICK-START.html)** | 🚀 Exemplos prontos de código |
+| **[contract-addresses.json](contract-addresses.json)** | 🔗 Endereços dos contratos |
+| **[contract-abis.json](contract-abis.json)** | 📋 ABIs completas dos contratos |
+| **[IMPLEMENTATION-SUMMARY.md](IMPLEMENTATION-SUMMARY.md)** | 📊 Resumo da implementação |
+| **[INDEX.md](INDEX.md)** | 📑 Índice completo |
 
 ---
 

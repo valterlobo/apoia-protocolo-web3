@@ -4,12 +4,18 @@
 **Relatório Técnico de Engenharia Web3 e Smart Contracts**
 
 **Identificação:** U1C501T1_VALTER_LOBO.pdf 
+
 **Programa:** Residência em TIC 29 - Web 3.0  
-**Autor:** VALTER DE OLIVEIRA LOBO 
+
+**Autor:** VALTER DE OLIVEIRA LOBO
+
 **Data:** 24/05/2026
+
 **Código-fonte:** [Apoia Protocolo - https://github.com/valterlobo/apoia-protocolo-web3](https://github.com/valterlobo/apoia-protocolo-web3)
+
 **Vídeo Demonstrativo:** [Apoia Protocolo Vídeo Demo](http://youtube.com/valterlobo)
-**Relatório de Auditoria:** [Segurança via Slither e Mythril.](https://github.com/valterlobo/apoia-protocolo-web3/blob/main/docs/RELATORIO_AUDITORIA_COMPLETO.md) 
+
+**Relatório de Auditoria:** [Segurança via Slither e Mythril.](https://github.com/valterlobo/apoia-protocolo-web3/blob/main/docs/RELATORIO_AUDITORIA_COMPLETO.md)
 
 ## 1. O Problema
 
@@ -107,7 +113,7 @@ Para um arquiteto Web3, a segurança jurídica de um protocolo reside na clareza
 - Esses NFTs servem como representações digitais de "Vouchers/Recibos" que concedem benefícios no mundo físico, como acessos VIP e ingressos.
 - A integração entre o ativo e a segurança do protocolo determina que a queima (Burn) desse token é estritamente obrigatória para que o apoiador consiga reaver seus fundos na etapa de reembolso.
 
-### 3.4 Incentivos Econômicos
+### 3.5 Incentivos Econômicos
 
 **Mecânica:** Mecanismo onde os usuários travam seus tokens $AGT para receber multiplicadores de rendimento e maior peso de voto, garantindo o engajamento a longo prazo no ecossistema.
 
@@ -1134,13 +1140,13 @@ function testRevertStalePriceFeed() public {
 
 *Inserir os hashes das transações que criaram cada contrato, obtidos durante o deploy.*
 
-| Contrato                  | Hash da Transação | Bloco     | Timestamp             |
+| Contrato                  | Hash da Transação | Bloco     |            |
 | ------------------------- | ----------------- | --------- | --------------------- |
-| **CampaignFactory**       | `0x...`           | `xxxxxxx` | `DD/MM/AAAA HH:MM:SS` |
-| **AGTToken**              | `0x...`           | `xxxxxxx` | `...`                 |
-| **TierManager (exemplo)** | `0x...`           | `xxxxxxx` | `...`                 |
-| **ApoiaDAO**              | `0x...`           | `xxxxxxx` | `...`                 |
-| **StakingAGT**            | `0x...`           | `xxxxxxx` | `...`                 |
+| **CampaignFactory**       | `0x9028d358a42d7b8902dcbbece2efaa70f3fc00b556a899068b56cc8dd41de5d4`           | `10923934` | 
+| **AGTToken**              | `0x4e12d26828526e51a92a3c951864eafeb66e1e891f2c70f8b8be3ed574c4976a`           | `10923934` | 
+| **ApoiaDAO**              | `0x557b24884cc58b09420c27cd881fb71d3cb3e69fe2b05ab35a9dbec574deec7b`           | `10923934` |               |
+| **StakingAGT**            | `0xae543d0ae8702549da2b439206b5fa7823df6b1b9be8533e4d212b00d6e89722`           | `10923934` | 
+| **TreasuryDAO**           | `0x4b1a45a467b3ecbc8496c091077d5d23b2fa81858fff75f12b203968dde8e04e`           | `10923933` | 
 
 ### 6.3 Endereços dos Contratos Implantados (Verificados)
 
@@ -1148,11 +1154,13 @@ function testRevertStalePriceFeed() public {
 
 | Contrato            | Endereço (Sepolia) | Link Etherscan                                     | Status da Verificação |
 | ------------------- | ------------------ | -------------------------------------------------- | --------------------- |
-| **CampaignFactory** | `0x...`            | [Link](https://sepolia.etherscan.io/address/0x...) | ✅ Verificado          |
-| **AGTToken**        | `0x...`            | [Link](https://sepolia.etherscan.io/address/0x...) | ✅ Verificado          |
-| **TierManager**     | `0x...`            | [Link](https://sepolia.etherscan.io/address/0x...) | ✅ Verificado          |
-| **ApoiaDAO**        | `0x...`            | [Link](https://sepolia.etherscan.io/address/0x...) | ✅ Verificado          |
-| **StakingAGT**      | `0x...`            | [Link](https://sepolia.etherscan.io/address/0x...) | ✅ Verificado          |
+| **CampaignFactory** | `0xb385A9fEEb0E4064bC7E2E4a89B6496e6864E8e7`            | [Link](https://sepolia.etherscan.io/address/0xb385A9fEEb0E4064bC7E2E4a89B6496e6864E8e7) | ✅ Verificado          |
+| **AGTToken**        | `0xb9cC185e0aea3486e3915B04286618610A995d3a`            | [Link](https://sepolia.etherscan.io/address/0xb9cC185e0aea3486e3915B04286618610A995d3a) | ✅ Verificado          |
+| **ApoiaDAO**        | `0x5181bC4a74D252e1f10678a7E32aE91c8518061A`            | [Link](https://sepolia.etherscan.io/address/0x5181bC4a74D252e1f10678a7E32aE91c8518061A) | ✅ Verificado          |
+| **StakingAGT**      | `0x9Dbefad6Cd0c96b5E64F4B963D1B85bfAc02C1ff`            | [Link](https://sepolia.etherscan.io/address/0x9Dbefad6Cd0c96b5E64F4B963D1B85bfAc02C1ff) | ✅ Verificado          |
+| **TreasuryDAO**     | `0x4780e8a81112E725741Ac70E2d02A3C8ad04Bfd5`            | [Link](https://sepolia.etherscan.io/address/0x4780e8a81112E725741Ac70E2d02A3C8ad04Bfd5) | ✅ Verificado          |
+
+**OBS:** **TierManager** , **Campaign** são criados no contrato **CampaignFactory** na criação de uma nova campanha.
 
 ### 6.4 Evidências Visuais (Capturas de Tela)
 
