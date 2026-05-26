@@ -121,7 +121,7 @@ O **Apoia Protocol** é um protocolo descentralizado de financiamento coletivo (
 - **Hash Inicial**: a50cd8a (start repository)
 - **Hash Final**: a9bfac4 (smart contract) — HEAD
 - **Branch**: main
-- **Repositório**: /home/valter/Desktop/WEB3-IREDE/.../apoia-protocolo-web3
+- **Repositório**: [APOIA PROTOCOLO](https://github.com/valterlobo/apoia-protocolo-web3/)
 
 ```bash
 Commits auditados:
@@ -165,6 +165,7 @@ Commits auditados:
 | **Foundry (forge)** | Nightly (latest) | Testes unitários, fuzzing, coverage |
 | **solc (solidity-compiler)** | 0.8.34 | Compilação, otimização, análise de warnings |
 | **Análise Manual** | — | Revisão de código, fluxos de segurança |
+| **Mythril** | v0.24.8 | Analisador de Execução Simbólica da ConsenSys |
 
 ---
 
@@ -1051,17 +1052,8 @@ Após deploy em Sepolia ou Goerli, preencher com:
 
 ---
 
-### C. Assinaturas da Equipe
 
-| Papel | Nome | Data | Assinatura |
-|------|------|------|-----------|
-| Lead Auditor | [TBD - Auditoria Interna] | 24/05/2026 | [Assinado digitalmente] |
-| Technical Reviewer | [TBD - Equipe Apoia] | 24/05/2026 | [Assinado digitalmente] |
-| Project Manager | [TBD - Equipe Apoia] | 24/05/2026 | [Assinado digitalmente] |
-
----
-
-### D. Disclaimer Legal
+### C. Disclaimer Legal
 
 **ESCOPO DA AUDITORIA:**
 
@@ -1100,17 +1092,3 @@ Este relatório é válido por **90 dias** a partir da data de emissão. Após e
 **Status Final:** ✅ APROVADO PARA TESTNET COM RESSALVAS
 
 ---
-
-## 📞 Contato & Próximos Passos
-
-Para dúvidas ou discussões sobre este relatório:
-
-1. **Revisar achados** com equipe técnica
-2. **Implementar recomendações** (prioridade alta primeiro)
-3. **Agendar auditoria formal** com firma especializada
-4. **Configurar monitoramento** on-chain antes de mainnet
-5. **Publicar código** em auditoria aberta (CodeArena/Sherlock) para validação comunitária
-
----
-
-**FIM DO RELATÓRIO DE AUDITORIA**
