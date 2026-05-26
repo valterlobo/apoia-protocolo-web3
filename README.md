@@ -214,8 +214,6 @@ apoia-protocolo-web3/
 │   └── cache/
 ├── docs/                              ← Documentação técnica
 │   ├── RELATORIO_AUDITORIA_COMPLETO.md
-│   ├── 04_ARQUITETURA_TECNICA.md
-│   ├── 05_VALIDACAO_TESTES_AUDITORIA.md
 │   └── RelatorioTecnico.md
 └── README.md
 ```
