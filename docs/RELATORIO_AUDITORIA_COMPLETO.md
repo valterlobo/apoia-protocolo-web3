@@ -866,7 +866,7 @@ function testFullProtocolFlow() public {
   - Duração esperada: 4-6 semanas
 
 - [ ] **Bug Bounty Program**: Iniciar programa Immunefi antes de mainnet
-  - Bounty range: $1,000 - $100,000 (conforme severidade)
+  - Bounty range: $1,000 - $10,000 (conforme severidade)
   - Plataforma: Immunefi ou Sherlock
 
 - [ ] **Elevar Cobertura de Testes para 90%+**:
@@ -889,7 +889,7 @@ function testFullProtocolFlow() public {
   - Considerar batch operations para reembolsos em massa
 
 - [ ] **Circuit Breaker**: Implementar limite de valor por transação para mitigar exploits
-  - Exemplo: Max 1000 ETH por saque único
+  - Exemplo: Max 2 ETH por saque único
   - Configurável via multisig
 
 - [ ] **Fallback Oracle**: Adicionar suporte a Pyth Network como backup do Chainlink
