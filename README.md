@@ -1,4 +1,4 @@
-# Apoia Protocol Web3 🚀
+# Apoia Protocol Web3
 
 [![Foundry](https://img.shields.io/badge/Built%20with-Foundry-blue)](https://book.getfoundry.sh/)
 [![Solidity](https://img.shields.io/badge/Solidity-^0.8.20-red)](https://solidity.readthedocs.io/)
@@ -54,7 +54,12 @@
 ### 🔄 Fluxo de Campanha
 ```
 ACTIVE → SUCCEEDED/FAILED → APPROVED/REJECTED → WITHDRAWN
+
 ```
+![INFOGRAFICO](docs/Apoia_Protocol__Crowdfunding_Descentralizado.png)
+
+
+
 
 ## 🏗️ Arquitetura
 
@@ -262,20 +267,13 @@ forge test --path test/fuzz/ -vv
 - ✅ Fuzzing de invariantes críticas
 - ✅ Timelock para propostas executadas
 
-### Como Reportar Vulnerabilidades
-
-Se encontrar uma vulnerabilidade de segurança, **não a divulgue publicamente**. Entre em contato via:
-- 📧 security@apoiaprotocol.dev (substitua pelo e-mail correto)
-- 🔐 GPG key: [adicione a chave GPG se disponível]
 
 ## 📚 Documentação
 
 Documentação técnica completa disponível em `docs/`:
 
-- [Arquitetura Técnica](docs/04_ARQUITETURA_TECNICA.md) - Visão geral da arquitetura
-- [Validação e Testes](docs/05_VALIDACAO_TESTES_AUDITORIA.md) - Estratégia de testes
 - [Relatório de Auditoria](docs/RELATORIO_AUDITORIA_COMPLETO.md) - Resultados da auditoria
-- [Relatório Técnico](docs/RelatorioTecnico.md) - Especificação técnica detalhada
+- [Relatório Técnico](docs/Relatorio-Tecnico-Entrega.md) - Especificação técnica detalhada
 
 ### Diagrama de Dependências
 
@@ -345,11 +343,6 @@ Abra um Pull Request com descrição clara do que foi modificado e por quê.
 
 Este projeto está licenciado sob a Licença MIT - veja [LICENSE](LICENSE) para detalhes.
 
-## 👥 Autores
-
-- **Apoia Protocol Team** - Desenvolvimento inicial
-- Contribuidores: [adicione nomes de contribuidores]
-
 ## 🙏 Agradecimentos
 
 - [OpenZeppelin](https://openzeppelin.com/) - Bibliotecas de contratos auditados
@@ -357,13 +350,4 @@ Este projeto está licenciado sob a Licença MIT - veja [LICENSE](LICENSE) para 
 - [Chainlink](https://chain.link/) - Price Feeds e oráculos descentralizados
 - Community - Feedback e sugestões
 
-## 📞 Contato e Suporte
-
-- 🌐 Website: [adicione URL]
-- 💬 Discord: [adicione link do Discord]
-- 🐦 Twitter: [@apoiaprotocol](https://twitter.com/apoiaprotocol)
-- 📧 Email: info@apoiaprotocol.dev
-
 ---
-
-**Construído com ❤️ para descentralizar o crowdfunding**
