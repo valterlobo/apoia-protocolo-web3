@@ -1,0 +1,28 @@
+{
+  "sepolia": {
+    "chainId": 11155111,
+    "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/ISqOLUfXDzgFu0-5ronlzwri_xFU4rZf",
+    "explorerUrl": "https://sepolia.etherscan.io",
+    "contracts": {
+      "TreasuryDAO": "0x4780e8a81112e725741ac70e2d02a3c8ad04bfd5",
+      "AGTToken": "0xb9cc185e0aea3486e3915b04286618610a995d3a",
+      "StakingAGT": "0x9dbefad6cd0c96b5e64f4b963d1b85bfac02c1ff",
+      "ApoiaDAO": "0x5181bc4a74d252e1f10678a7e32ae91c8518061a",
+      "CampaignFactory": "0xb385a9feeb0e4064bc7e2e4a89b6496e6864e8e7",
+      "ChainlinkFeed": "0x694AA1769357215DE4FAC081bf1f309aDC325306"
+    }
+  },
+  "localhost": {
+    "chainId": 31337,
+    "rpcUrl": "http://localhost:8545",
+    "explorerUrl": "http://localhost:8000",
+    "contracts": {
+      "TreasuryDAO": "0x4f4C97A823A071f00E40691066d832EF7dd4Fd20",
+      "AGTToken": "0x31F5B3cB28fA2f10F82eF5bb822bfE18B9BC3ef8",
+      "StakingAGT": "0x72bE0bE6D3371f1C3b0F4785F5e0606A14877fd9",
+      "ApoiaDAO": "0x554A3C2c0767cBD21F25b315Aa24786a3d1836F6",
+      "CampaignFactory": "0x7F449CBBc23dFC34F7Be01E694A71590c59516E7",
+      "ChainlinkFeed": "0x694AA1769357215DE4FAC081bf1f309aDC325306"
+    }
+  }
+}
