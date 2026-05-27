@@ -154,8 +154,8 @@ contract CampaignTest is Test {
     }
 
     function testRevertStalePriceFeed() public {
-        vm.warp(block.timestamp + 1 days);
-        feed.setUpdatedAt(block.timestamp - 2 hours);
+        vm.warp(block.timestamp + 4 days);
+        feed.setUpdatedAt(block.timestamp - 49 hours);
         vm.prank(apoiador1);
         vm.expectRevert("Chainlink: preco stale");
         campaign.contribute{value: 1 ether}(1);

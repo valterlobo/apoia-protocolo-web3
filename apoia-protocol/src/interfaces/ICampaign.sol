@@ -25,6 +25,7 @@ interface ICampaign {
     function requestWithdrawal() external;
     function executeWithdrawal() external;
     function claimRefund() external;
+    function createTier(string calldata name, uint256 minAmountUSD, uint256 maxSupply, uint8 priceMode, string calldata metadataURI) external returns (uint256);
     function config() external view returns (CampaignConfig memory);
     function totalRaisedUSD() external view returns (uint256);
     function balance() external view returns (uint256);

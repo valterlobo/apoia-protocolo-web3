@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.20;
 
 import {Script, console2} from "forge-std/Script.sol";
 import {AGTToken} from "../src/core/AGTToken.sol";
@@ -32,7 +32,7 @@ contract DeployApoiaProtocol is Script {
     //   Sepolia:  0x694AA1769357215DE4FAC081bf1f309aDC325306
     //   Polygon:  0xF9680D99D6C9589e2a93a78A04A279e509205945
     //   Base:     0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70
-    address constant PRICE_FEED = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
+    address constant PRICE_FEED = 0x694AA1769357215DE4FAC081bf1f309aDC325306;
 
     function run() external {
         uint256 pk = vm.envUint("PRIVATE_KEY");

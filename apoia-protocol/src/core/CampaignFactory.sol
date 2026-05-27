@@ -71,13 +71,14 @@ contract CampaignFactory is Ownable, ReentrancyGuard, IApoiaProtocol {
     ) external nonReentrant returns (address campaign, address tierMgr) {
         address feed = priceFeed != address(0) ? priceFeed : defaultPriceFeed;
 
-        // Nonce atual desta factory: número de contratos já criados por ela.
+        // Nonce atual desta factory. O EVM inicia o nonce de contratos em 1.
         // Cada chamada a createCampaign deploya 2 contratos:
-        //   nonce N   → Campaign
-        //   nonce N+1 → TierManager  ← este é o que precisamos prever
-        uint64 nonce = uint64(_all.length * 2); // cada campanha incrementa o nonce por 2
+        //   nonce base = 1 + (_all.length * 2)
+        //   Campaign usa o nonce base
+        //   TierManager usa o nonce base + 1
+        uint64 nonceBase = uint64(1 + (_all.length * 2)); 
 
-        address predictedTM = _predictCreate(nonce + 1);
+        address predictedTM = _predictCreate(nonceBase + 1);
 
         Campaign c = new Campaign(
             payable(msg.sender),

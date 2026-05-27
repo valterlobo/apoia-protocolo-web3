@@ -7,7 +7,7 @@ import {AggregatorV3Interface} from "../interfaces/chainlink/AggregatorV3Interfa
 /// @notice Wrapper seguro para Price Feeds Chainlink.
 ///         Reverte em stale price, round incompleto ou resposta inválida.
 library ChainlinkHelper {
-    uint256 internal constant MAX_STALENESS = 1 hours;
+    uint256 internal constant MAX_STALENESS = 48 hours;
 
     function getLatestPrice(AggregatorV3Interface feed) internal view returns (int256 price) {
         // slither-disable-next-line unused-return

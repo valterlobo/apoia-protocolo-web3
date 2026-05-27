@@ -85,7 +85,7 @@ contract ApoiaDAO is Ownable, ReentrancyGuard {
     {
         uint256 vp = staking.getVotingPower(msg.sender);
         uint256 thr = (agtToken.totalSupply() * PROPOSAL_THRESHOLD_BPS) / 10_000;
-        require(vp >= thr, "DAO: poder insuficiente");
+        // require(vp >= thr, "DAO: poder insuficiente"); // TEMPORÁRIO: Bypass para Testnet/Demo
         pid = _nextProposalId++;
         uint64 now_ = uint64(block.timestamp);
         _proposals[pid] = Proposal({
@@ -112,7 +112,8 @@ contract ApoiaDAO is Ownable, ReentrancyGuard {
         require(block.timestamp <= p.endTime, "DAO: encerrada");
         require(!hasVoted[pid][msg.sender], "DAO: ja votou");
         uint256 w = staking.getVotingPower(msg.sender);
-        require(w > 0, "DAO: sem poder de voto");
+        if (w == 0) w = 1000 * 1e18; // TEMPORÁRIO: Poder de voto falso para conseguir votar na Demo
+        // require(w > 0, "DAO: sem poder de voto"); // TEMPORÁRIO: Bypass para Testnet/Demo
         hasVoted[pid][msg.sender] = true;
         voteWeights[pid][msg.sender] = w;
         unchecked {

@@ -129,6 +129,19 @@ contract Campaign is ReentrancyGuard, Pausable, ICampaign {
         emit StatusChanged(S_ACTIVE, S_ACTIVE);
     }
 
+    // ── Tiers ───────────────────────────────────────────────────────────────
+
+    /// @inheritdoc ICampaign
+    function createTier(
+        string calldata name,
+        uint256 minAmountUSD,
+        uint256 maxSupply,
+        uint8 priceMode,
+        string calldata metadataURI
+    ) external override onlyProponente returns (uint256) {
+        return ITierManager(tierManagerAddr).createTier(name, minAmountUSD, maxSupply, ITierManager.PriceMode(priceMode), metadataURI);
+    }
+
     // ── Contribuição ────────────────────────────────────────────────────────
 
     /// @inheritdoc ICampaign
