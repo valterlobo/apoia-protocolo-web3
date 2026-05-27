@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APOIA Protocol - Smart Crowdfunding</title>
+    <!-- CDN alternativo para ethers.js v6 -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header & Navigation */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo::before {
+            content: "🤝";
+            font-size: 32px;
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        nav button {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        nav button:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: #60a5fa;
+        }
+
+        nav button.active {
+            background: #60a5fa;
+            color: #0f172a;
+            border-color: #60a5fa;
+        }
+
+        .wallet-btn {
+            padding: 8px 16px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-btn:hover {
+            background: #059669;
+        }
+
+        .wallet-btn.connected {
+            background: #8b5cf6;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #f1f5f9;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #60a5fa;
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .badge.pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .badge.rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .card-body {
+            margin-bottom: 16px;
+        }
+
+        .card-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #60a5fa, #10b981);
+            transition: width 0.3s ease;
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #60a5fa;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3b82f6;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #60a5fa;
+            color: #60a5fa;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-box {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-box-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-box-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #f1f5f9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #60a5fa;
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Transaction Status */
+        .tx-status {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .tx-status.show {
+            display: flex;
+        }
+
+        .tx-status.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .tx-status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .tx-status.pending {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Search & Filter */
+        .search-filter {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+            color: #e2e8f0;
+        }
+
+        .search-box input::placeholder {
+            color: #94a3b8;
+        }
+
+        .filter-btn {
+            padding: 10px 16px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+            color: #60a5fa;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .filter-btn.active {
+            background: #60a5fa;
+            color: white;
+        }
+
+        /* Details View */
+        .details-container {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .details-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .details-section {
+            margin-bottom: 32px;
+        }
+
+        .details-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #f1f5f9;
+        }
+
+        .details-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+        }
+
+        .details-label {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .details-value {
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+
+        /* Vesting Timeline */
+        .vesting-timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .vesting-item {
+            position: relative;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: rgba(60, 130, 246, 0.05);
+            border-left: 2px solid #60a5fa;
+            border-radius: 6px;
+        }
+
+        .vesting-item::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            width: 16px;
+            height: 16px;
+            background: #60a5fa;
+            border-radius: 50%;
+            border: 3px solid rgba(30, 41, 59, 0.9);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .details-header {
+                grid-template-columns: 1fr;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #94a3b8;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">APOIA Protocol</div>
+            <nav>
+                <button class="nav-btn active" data-screen="home">🏠 Home</button>
+                <button class="nav-btn" data-screen="explore">🔍 Explorar</button>
+                <button class="nav-btn" data-screen="details">📊 Detalhes</button>
+                <button class="nav-btn" data-screen="dashboard">📈 Dashboard</button>
+                <button class="nav-btn" data-screen="portfolio">🎁 Portfólio</button>
+                <button class="nav-btn" data-screen="governance">🗳️ Governança</button>
+                <button class="nav-btn" data-screen="treasury">💰 Tesouro</button>
+                <button class="nav-btn" data-screen="create">✨ Criar</button>
+                <button class="wallet-btn" id="walletBtn">Conectar Wallet</button>
+            </nav>
+        </header>
+
+        <!-- Screen 01: Home -->
+        <div class="screen active" id="home">
+            <h1 class="page-title">🏠 Home - Bem-vindo ao APOIA Protocol</h1>
+
+            <div class="stats-section">
+                <div class="stat-box">
+                    <div class="stat-box-label">Total Arrecadado</div>
+                    <div class="stat-box-value" id="totalRaised">0 ETH</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-box-label">Campanhas Ativas</div>
+                    <div class="stat-box-value" id="activeCampaigns">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-box-label">Taxa ETH/USD</div>
+                    <div class="stat-box-value" id="ethPrice">$0.00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-box-label">Apoiadores Totais</div>
+                    <div class="stat-box-value" id="totalBackers">0</div>
+                </div>
+            </div>
+
+            <div class="page-title" style="font-size: 20px; margin-top: 40px;">📌 Campanhas em Destaque</div>
+            <div class="cards-grid" id="homeCards">
+                <!-- Cards carregados dinamicamente -->
+            </div>
+        </div>
+
+        <!-- Screen 02: Explorar -->
+        <div class="screen" id="explore">
+            <h1 class="page-title">🔍 Explorar Campanhas</h1>
+
+            <div class="search-filter">
+                <div class="search-box">
+                    <input type="text" placeholder="Buscar campanhas..." id="searchInput">
+                </div>
+                <button class="filter-btn active" data-filter="all">Todas</button>
+                <button class="filter-btn" data-filter="active">Ativas</button>
+                <button class="filter-btn" data-filter="pending">Pendentes</button>
+                <button class="filter-btn" data-filter="completed">Finalizadas</button>
+            </div>
+
+            <div class="cards-grid" id="exploreCards">
+                <!-- Cards carregados dinamicamente -->
+            </div>
+        </div>
+
+        <!-- Screen 03: Detalhes -->
+        <div class="screen" id="details">
+            <h1 class="page-title">📊 Detalhes da Campanha</h1>
+
+            <div id="detailsLoading" class="loading">Selecione uma campanha para ver detalhes</div>
+
+            <div id="detailsContent" style="display: none;">
+                <div class="details-container">
+                    <div class="details-header">
+                        <div>
+                            <div class="details-section">
+                                <div class="details-title" id="campaignTitle">Nome da Campanha</div>
+                                <div class="details-item">
+                                    <span class="details-label">Criador</span>
+                                    <span class="details-value" id="campaignCreator">0x...</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Status</span>
+                                    <span class="details-value" id="campaignStatus">Ativo</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Soft Cap</span>
+                                    <span class="details-value" id="campaignSoftCap">0 ETH</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Hard Cap</span>
+                                    <span class="details-value" id="campaignHardCap">0 ETH</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="details-section">
+                                <div class="details-title">Progresso</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="detailsProgress" style="width: 45%"></div>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Arrecadado</span>
+                                    <span class="details-value" id="campaignRaised">0 ETH</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Apoiadores</span>
+                                    <span class="details-value" id="campaignBackers">0</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Preço do Oráculo (Chainlink)</span>
+                                    <span class="details-value" id="oraclePrice">$0.00</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Timestamp do Oráculo</span>
+                                    <span class="details-value" id="oracleTimestamp">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="details-section">
+                        <div class="details-title">Tiers de Recompensa (NFT ERC-1155)</div>
+                        <div id="tiersDetailContainer"
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                            <div style="text-align:center; padding:20px; color:#94a3b8;">Carregando tiers...</div>
+                        </div>
+                        <div id="tierSelectionHint" style="margin-top: 12px; font-size: 13px; color: #94a3b8;">Selecione um tier para contribuir.</div>
+                    </div>
+
+                    <div class="details-section">
+                        <div class="details-title">Datas Importantes</div>
+                        <div class="details-item">
+                            <span class="details-label">Início</span>
+                            <span class="details-value" id="campaignStart">-</span>
+                        </div>
+                        <div class="details-item">
+                            <span class="details-label">Encerramento</span>
+                            <span class="details-value" id="campaignEnd">-</span>
+                        </div>
+                        <div class="details-item">
+                            <span class="details-label">Tempo Restante</span>
+                            <span class="details-value" id="campaignTimeLeft">-</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 32px;">
+                        <label class="form-label">Valor do Aporte (ETH)</label>
+                        <input type="number" class="form-input" id="contributeAmount" placeholder="0.1" min="0.01"
+                            step="0.01">
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" id="contributeBtn">Contribuir
+                        para Campanha</button>
+
+                    <div id="contributeStatus"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 04: Dashboard -->
+        <div class="screen" id="dashboard">
+            <h1 class="page-title">📈 Dashboard do Proponente</h1>
+
+            <div id="dashboardContent">
+                <div class="details-container">
+                    <div class="details-title">Minhas Campanhas</div>
+                    <div class="cards-grid" id="dashboardCards">
+                        <!-- Cards carregados dinamicamente -->
+                    </div>
+
+                    <div class="details-section" style="margin-top: 40px;">
+                        <div class="details-title">Gestão de Saque</div>
+                        <div class="details-item">
+                            <span class="details-label">Saldo Disponível para Saque</span>
+                            <span class="details-value" id="withdrawalBalance">0 ETH</span>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 16px;">Solicitar Saque</button>
+                    </div>
+
+                    <div class="details-section" style="margin-top: 40px;">
+                        <div class="details-title">Estatísticas Gerais</div>
+                        <div class="stats-section">
+                            <div class="stat-box">
+                                <div class="stat-box-label">Total Arrecadado</div>
+                                <div class="stat-box-value" id="dashTotalRaised">0 ETH</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-label">Campanhas</div>
+                                <div class="stat-box-value" id="dashCampaignCount">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-label">Apoiadores</div>
+                                <div class="stat-box-value" id="dashBackerCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 05: Portfólio -->
+        <div class="screen" id="portfolio">
+            <h1 class="page-title">🎁 Meu Portfólio</h1>
+
+            <div class="details-container">
+                <div class="details-section">
+                    <div class="details-title">🎨 Meus NFTs (ERC-1155)</div>
+                    <div class="cards-grid" id="nftCards">
+                        <!-- NFTs carregados dinamicamente -->
+                    </div>
+                </div>
+
+                <div class="details-section" style="margin-top: 40px;">
+                    <div class="details-title">📊 Vesting de AGT</div>
+                    <div class="vesting-timeline" id="vestingTimeline">
+                        <!-- Timeline carregada dinamicamente -->
+                    </div>
+                </div>
+
+                <div class="details-section" style="margin-top: 40px;">
+                    <div class="details-title">💎 Staking AGT</div>
+                    <div class="details-item">
+                        <span class="details-label">AGT Depositado</span>
+                        <span class="details-value" id="stakedAmount">0 AGT</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Tempo de Lock</span>
+                        <span class="details-value" id="lockTime">0 dias</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Multiplicador de Votação</span>
+                        <span class="details-value" id="votingMultiplier">1x</span>
+                    </div>
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label class="form-label">AGT para Stake</label>
+                        <input id="stakeAmountInput" type="number" class="form-input" placeholder="0" min="0.01" step="0.01">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label">Período de Lock</label>
+                        <select id="stakeDurationSelect" class="form-input">
+                            <option value="7776000">3 meses (1.5x)</option>
+                            <option value="15552000">6 meses (2x)</option>
+                            <option value="31536000">12 meses (3x)</option>
+                        </select>
+                    </div>
+                    <button id="stakeAgtBtn" class="btn btn-primary" style="width: 100%; margin-top: 12px;">Fazer Stake</button>
+                    <div id="stakeStatus" style="font-size: 12px; color: #94a3b8; margin-top: 10px; min-height: 18px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 06: Governança -->
+        <div class="screen" id="governance">
+            <h1 class="page-title">🗳️ Governança da DAO</h1>
+
+            <div class="details-container">
+                <div class="details-section">
+                    <div class="details-title">📊 Métricas da DAO</div>
+                    <div class="stats-section">
+                        <div class="stat-box">
+                            <div class="stat-box-label">Quórum Dual (Tokens + Carteiras)</div>
+                            <div class="stat-box-value" id="dualQuorum">45%</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label">Propostas Ativas</div>
+                            <div class="stat-box-value" id="activeProposals">3</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label">AGT Circulante</div>
+                            <div class="stat-box-value" id="circulatingAGT">1.2M</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label">Seu Poder de Voto</div>
+                            <div class="stat-box-value" id="userVotingPower">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-section" style="margin-top: 40px;">
+                    <div class="details-title">🗳️ Propostas Abertas</div>
+                    <div class="cards-grid" id="proposalCards">
+                        <!-- Propostas carregadas dinamicamente -->
+                    </div>
+                </div>
+                <div class="details-section" style="margin-top: 40px;">
+                    <div class="details-title">📝 Criar Nova Proposta</div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Proposta</label>
+                        <select class="form-input" id="propTypeInput">
+                            <option value="0">STANDARD (Geral)</option>
+                            <option value="1">CAMPAIGN_APPROVAL (Aprovar Campanha)</option>
+                            <option value="2">FUND_TRANSFER (Transferência)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Endereço Alvo (Target Contract)</label>
+                        <input type="text" class="form-input" id="propTargetInput"
+                            value="0x0000000000000000000000000000000000000000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição da Proposta</label>
+                        <textarea class="form-textarea" id="propDescInput"
+                            placeholder="Ex: Proposta para ajustar a taxa da plataforma..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="createProposal()">🚀
+                        Submeter Proposta</button>
+                    <div id="propStatus" style="margin-top: 12px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 07: Tesouro -->
+        <div class="screen" id="treasury">
+            <h1 class="page-title">💰 Tesouro da DAO</h1>
+
+            <div id="treasuryLoading" style="text-align:center; padding:30px; color:#94a3b8;">
+                <div class="spinner"></div> Carregando dados do Tesouro...
+            </div>
+
+            <div class="details-container" id="treasuryContent" style="display:none;">
+                <div class="details-section">
+                    <div class="details-title">💼 Composição do Fundo</div>
+                    <div class="stats-section">
+                        <div class="stat-box">
+                            <div class="stat-box-label">ETH Total</div>
+                            <div class="stat-box-value" id="treasuryETH">—</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label">AGT Reservado</div>
+                            <div class="stat-box-value" id="treasuryAGT">—</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label">Valor Total (USD)</div>
+                            <div class="stat-box-value" id="treasuryUSD">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-section" style="margin-top: 40px;">
+                    <div class="details-title">📊 Detalhamento On-Chain</div>
+                    <div class="details-item">
+                        <span class="details-label">Saldo ETH (Tesouro)</span>
+                        <span class="details-value" id="treasuryETHDetail">—</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Saldo AGT (Tesouro)</span>
+                        <span class="details-value" id="treasuryAGTDetail">—</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Supply Total AGT</span>
+                        <span class="details-value" id="treasuryAGTSupply">—</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Cotação ETH/USD (Oráculo)</span>
+                        <span class="details-value" id="treasuryOraclePrice">—</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Total de Campanhas Registradas</span>
+                        <span class="details-value" id="treasuryCampaignCount">—</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="details-label">Multisig Expira Em</span>
+                        <span class="details-value" id="treasuryMultisigExpiry">—</span>
+                    </div>
+                </div>
+
+                <div class="details-section" style="margin-top: 40px;">
+                    <div class="details-title">📈 Fluxo de Caixa</div>
+                    <div
+                        style="background: rgba(16, 185, 129, 0.05); padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 3px solid #10b981;">
+                        <div style="font-weight: 600; margin-bottom: 8px;">✅ Entradas (5% Taxa de Plataforma)</div>
+                        <div style="font-size: 14px; color: #e2e8f0;" id="treasuryInflows">Aguardando dados...</div>
+                    </div>
+                    <div
+                        style="background: rgba(239, 68, 68, 0.05); padding: 16px; border-radius: 8px; border-left: 3px solid #ef4444;">
+                        <div style="font-weight: 600; margin-bottom: 8px;">❌ Saídas (Dispatch aprovados pela DAO)</div>
+                        <div style="font-size: 14px; color: #e2e8f0;" id="treasuryOutflows">Aguardando dados...</div>
+                    </div>
+                </div>
+
+                <div class="details-section" style="margin-top: 40px;">
+                    <div class="details-title">🔗 Contratos Verificados (Sepolia)</div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;" id="treasuryContractLinks">
+                        <!-- Preenchido dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 08: Criar Campanha -->
+        <div class="screen" id="create">
+            <h1 class="page-title">✨ Criar Nova Campanha</h1>
+
+            <div class="details-container">
+                <div style="max-width: 600px;">
+                    <div class="details-section">
+                        <div class="details-title">📋 Etapa 1/4: Informações Básicas</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Título da Campanha *</label>
+                            <input type="text" class="form-input" id="campaignNameInput"
+                                placeholder="Ex: Novo Aplicativo de Educação">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Descrição *</label>
+                            <textarea class="form-textarea" id="campaignDescInput"
+                                placeholder="Descreva sua campanha em detalhes..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Categoria *</label>
+                            <select class="form-select" id="categorySelect">
+                                <option>Selecione uma categoria...</option>
+                                <option>Educação</option>
+                                <option>Tecnologia</option>
+                                <option>Saúde</option>
+                                <option>Sustentabilidade</option>
+                                <option>Arte & Cultura</option>
+                                <option>Outro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="details-section">
+                        <div class="details-title">💰 Etapa 2/4: Configuração Financeira</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Soft Cap (ETH) *</label>
+                            <input type="number" class="form-input" id="softCapInput" placeholder="Mínimo necessário"
+                                min="0.1" step="0.1">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Hard Cap (ETH) *</label>
+                            <input type="number" class="form-input" id="hardCapInput"
+                                placeholder="Máximo de arrecadação" min="0.1" step="0.1">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Taxa de Plataforma (%)</label>
+                            <input type="number" class="form-input" value="5" disabled placeholder="5%">
+                        </div>
+                    </div>
+
+                    <div class="details-section">
+                        <div class="details-title">📅 Etapa 3/4: Datas</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Data de Início *</label>
+                            <input type="datetime-local" class="form-input" id="startDateInput">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Data de Encerramento *</label>
+                            <input type="datetime-local" class="form-input" id="endDateInput">
+                        </div>
+
+                        <div
+                            style="background: rgba(96, 165, 250, 0.05); padding: 12px; border-radius: 8px; border-left: 2px solid #60a5fa;">
+                            <div style="font-size: 12px; color: #94a3b8;">
+                                ⚠️ Datas retroativas não são permitidas. Mínimo de 7 dias entre início e fim.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="details-section">
+                        <div class="details-title">🎁 Etapa 4/4: Tiers de Recompensa</div>
+
+                        <div id="tiersList"
+                            style="background: rgba(16, 185, 129, 0.05); padding: 12px; border-radius: 8px; border-left: 2px solid #10b981; margin-bottom: 16px;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">✅ Tiers Configurados</div>
+                            <div id="tiersContainer" style="font-size: 12px; color: #e2e8f0;">
+                                🥉 Bronze (0.1 ETH+) - Bonus: 5%<br>
+                                🥈 Prata (0.5 ETH+) - Bonus: 10%<br>
+                                🥇 Ouro (1.0 ETH+) - Bonus: 15%<br>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;"
+                            id="customizeTiersBtn">🎨 Personalizar Tiers</button>
+                    </div>
+
+                    <div id="createStatus"></div>
+
+                    <button class="btn btn-primary"
+                        style="width: 100%; padding: 16px; font-size: 16px; margin-top: 24px;" id="createCampaignBtn">
+                        🚀 Criar Campanha
+                    </button>
+
+                    <div
+                        style="background: rgba(96, 165, 250, 0.05); padding: 12px; border-radius: 8px; border-left: 2px solid #60a5fa; margin-top: 16px;">
+                        <div style="font-size: 12px; color: #e2e8f0;">
+                            💡 Após criar a campanha, você poderá gerenciá-la no Dashboard. A campanha será submetida
+                            para votação da DAO antes de ser publicada.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Personalização de Tiers -->
+    <div class="modal" id="tiersModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <span>🎁 Personalizar Tiers de Recompensa</span>
+                <button class="modal-close" onclick="closeTiersModal()">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Nome do Tier *</label>
+                <input type="text" class="form-input" id="tierNameInput" placeholder="Ex: Bronze, Prata, Ouro">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Valor Mínimo (ETH) *</label>
+                <input type="number" class="form-input" id="tierMinAmountInput" placeholder="Ex: 0.1" min="0.01"
+                    step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Bônus AGT (%)</label>
+                <input type="number" class="form-input" id="tierBonusInput" placeholder="Ex: 10" min="0" max="100"
+                    value="10">
+            </div>
+
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;" onclick="addTierToList()">
+                ➕ Adicionar Tier
+            </button>
+
+            <div
+                style="background: rgba(96, 165, 250, 0.05); padding: 16px; border-radius: 8px; border-left: 2px solid #60a5fa; margin-bottom: 16px;">
+                <div style="font-weight: 600; margin-bottom: 12px; color: #60a5fa;">📝 Tiers Adicionados</div>
+                <div id="tiersListModal">
+                    <div
+                        style="font-size: 12px; color: #94a3b8; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                        🥉 Bronze (0.1 ETH+) - Bonus: 5%
+                    </div>
+                    <div
+                        style="font-size: 12px; color: #94a3b8; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; margin-top: 8px;">
+                        🥈 Prata (0.5 ETH+) - Bonus: 10%
+                    </div>
+                    <div
+                        style="font-size: 12px; color: #94a3b8; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; margin-top: 8px;">
+                        🥇 Ouro (1.0 ETH+) - Bonus: 15%
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeTiersModal()">
+                    ❌ Cancelar
+                </button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveTiers()">
+                    ✅ Confirmar Tiers
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para tratamento de staleness do Chainlink -->
+    <script src="chainlink-staleness-handler.js"></script>
+
+    <script>
+        // ============================================
+        // ETHERS.JS INTEGRATION & WEB3 CONFIG
+        // ============================================
+
+        let provider;
+        let signer;
+        let userAddress = null;
+        let ethPrice = 2000; // Mock value
+        let selectedTierId = null;
+        let currentCampaignTiers = [
+            { id: 1, name: '🥉 Bronze', minAmount: '0.1', bonus: 5 },
+            { id: 2, name: '🥈 Prata', minAmount: '0.5', bonus: 10 },
+            { id: 3, name: '🥇 Ouro', minAmount: '1.0', bonus: 15 }
+        ];
+
+        // Smart Contract Addresses (TESTNET)
+        const CONTRACTS = {
+            CAMPAIGN_FACTORY: '0x7F449CBBc23dFC34F7Be01E694A71590c59516E7', // Factory deployada com a correção do bug
+            AGT_TOKEN: '0x31F5B3cB28fA2f10F82eF5bb822bfE18B9BC3ef8',
+            APOIA_DAO: '0x554A3C2c0767cBD21F25b315Aa24786a3d1836F6',
+            STAKING_AGT: '0x72bE0bE6D3371f1C3b0F4785F5e0606A14877fd9',
+            TREASURY_DAO: '0x4f4C97A823A071f00E40691066d832EF7dd4Fd20', // Atualizar após deploy
+            TIER_MANAGER: '0x5234567890123456789012345678901234567894',
+            CHAINLINK_FEED: '0x694AA1769357215DE4FAC081bf1f309aDC325306' // Sepolia ETH/USD
+        };
+
+        const ABI_TREASURY_READ = [
+            "function ethBalance() external view returns (uint256)",
+            "function tokenBalance(address t) external view returns (uint256)",
+            "function daoContract() external view returns (address)",
+            "function multisigExpiry() external view returns (uint64)"
+        ];
+
+        const ABI_AGT_READ = [
+            "function balanceOf(address account) external view returns (uint256)",
+            "function totalSupply() external view returns (uint256)",
+            "function name() external view returns (string)",
+            "function symbol() external view returns (string)",
+            "function approve(address spender, uint256 amount) external returns (bool)"
+        ];
+
+        const ABI_STAKING_AGT_WRITE = [
+            "function stake(uint256 amount, uint256 lockDuration) external returns (uint256)"
+        ];
+
+        const ABI_CAMPAIGN_FACTORY = [
+            "function createCampaign(uint256 softCap, uint256 hardCap, uint64 startTime, uint64 endTime, string calldata baseURI, address priceFeed) external returns (address campaign, address tierMgr)",
+            "event CampaignCreated(address indexed campaign, address indexed tierManager, address indexed creator, uint256 timestamp)"
+        ];
+
+        const ABI_APOIA_DAO = [
+            "function propose(uint8 pType, address targetContract, bytes calldata callData, string calldata description) external returns (uint256 pid)",
+            "function castVote(uint256 pid, bool support) external",
+            "function proposalCount() external view returns (uint256)",
+            "function getProposal(uint256 pid) external view returns (tuple(uint256 id, address proposer, uint8 pType, address targetContract, bytes callData, uint64 startTime, uint64 endTime, uint64 executionTime, uint256 forVotes, uint256 againstVotes, uint256 uniqueVoters, uint8 status, bool executed))"
+        ];
+
+        const ABI_CAMPAIGN_FACTORY_READ = [
+            "function getAllCampaigns() external view returns (address[])",
+            "function totalCampaigns() external view returns (uint256)"
+        ];
+
+        const ABI_CAMPAIGN_READ = [
+            "function config() external view returns (tuple(address proponente, uint256 softCap, uint256 hardCap, uint64 startTime, uint64 endTime, address tierManager, address agtToken, address treasuryDAO, address priceFeedETHUSD, uint16 platformFee))",
+            "function totalRaisedUSD() external view returns (uint256)",
+            "function balance() external view returns (uint256)",
+            "function status() external view returns (uint8)",
+            "function createTier(string calldata name, uint256 minAmountUSD, uint256 maxSupply, uint8 priceMode, string calldata metadataURI) external returns (uint256)"
+        ];
+
+        const ABI_TIER_MANAGER_READ = [
+            "function totalTiers() external view returns (uint256)",
+            "function getTierMetadata(uint256 tierId) external view returns (tuple(uint256 id, string name, uint256 minAmountUSD, uint256 maxSupply, uint256 minted, uint8 priceMode, string metadataURI))",
+            "function balanceOf(address account, uint256 id) external view returns (uint256)",
+            "function balanceOfBatch(address[] calldata accounts, uint256[] calldata ids) external view returns (uint256[])"
+        ];
+
+        const ABI_STAKING_AGT_READ = [
+            "function getHolderPositions(address user) external view returns (uint256[])",
+            "function getPosition(uint256 id) external view returns (tuple(uint256 amount, uint64 lockStart, uint64 lockEnd, uint64 lockDuration, bool withdrawn))",
+            "function getVotingPower(address user) external view returns (uint256)"
+        ];
+
+        // Campanhas carregadas on-chain
+        let onChainCampaigns = [];
+
+        const STATUS_MAP = {
+            0: 'active',
+            1: 'pending',   // SUCCEEDED — aguardando DAO
+            2: 'active',    // APPROVED
+            3: 'completed', // FAILED
+            4: 'completed', // REJECTED
+            5: 'completed'  // WITHDRAWN
+        };
+        const STATUS_LABEL = {
+            0: 'Captando',
+            1: 'Aguardando DAO',
+            2: 'Aprovada',
+            3: 'Falhou',
+            4: 'Rejeitada',
+            5: 'Sacada'
+        };
+
+        async function fetchOnChainCampaigns() {
+            try {
+                const rpcProvider = provider || new ethers.JsonRpcProvider('https://eth-sepolia.g.alchemy.com/v2/ISqOLUfXDzgFu0-5ronlzwri_xFU4rZf');
+                const factory = new ethers.Contract(CONTRACTS.CAMPAIGN_FACTORY, ABI_CAMPAIGN_FACTORY_READ, rpcProvider);
+                const addresses = await factory.getAllCampaigns();
+
+                const results = [];
+                for (let i = 0; i < addresses.length; i++) {
+                    try {
+                        const camp = new ethers.Contract(addresses[i], ABI_CAMPAIGN_READ, rpcProvider);
+                        const [cfg, raised, bal, st] = await Promise.all([
+                            camp.config(),
+                            camp.totalRaisedUSD(),
+                            camp.balance(),
+                            camp.status()
+                        ]);
+
+                        const softCapUsd = Number(cfg.softCap) / 1e8;
+                        const hardCapUsd = Number(cfg.hardCap) / 1e8;
+                        const raisedUsd = Number(raised) / 1e8;
+                        const balEth = Number(ethers.formatEther(bal));
+                        const statusNum = Number(st);
+                        const progress = hardCapUsd > 0 ? Math.min(100, Math.round((raisedUsd / hardCapUsd) * 100)) : 0;
+                        const creator = cfg.proponente;
+
+                        results.push({
+                            id: i + 1,
+                            address: addresses[i],
+                            title: `Campanha #${i + 1}`,
+                            creator: `${creator.slice(0, 6)}...${creator.slice(-4)}`,
+                            creatorFull: creator,
+                            description: `Soft Cap: $${softCapUsd.toFixed(2)} | Hard Cap: $${hardCapUsd.toFixed(2)}`,
+                            status: STATUS_MAP[statusNum] || 'active',
+                            statusLabel: STATUS_LABEL[statusNum] || 'Desconhecido',
+                            softCap: softCapUsd,
+                            hardCap: hardCapUsd,
+                            raised: raisedUsd,
+                            raisedETH: balEth,
+                            backers: '—',
+                            progress: progress,
+                            startDate: new Date(Number(cfg.startTime) * 1000).toLocaleDateString('pt-BR'),
+                            endDate: new Date(Number(cfg.endTime) * 1000).toLocaleDateString('pt-BR'),
+                            image: '🚀',
+                            onChain: true
+                        });
+                    } catch (err) {
+                        console.warn(`Erro ao ler campanha ${addresses[i]}:`, err);
+                    }
+                }
+                onChainCampaigns = results;
+                return results;
+            } catch (err) {
+                console.error('Erro ao buscar campanhas on-chain:', err);
+                return [];
+            }
+        }
+
+        // Mock Campaigns Data
+         //const mockCampaigns = []; 
+        const mockCampaigns = [
+            {
+                id: 1,
+                title: "Plataforma de Educação Descentralizada",
+                creator: "0x1234...5678",
+                description: "Um novo sistema de educação online baseado em blockchain com certificados NFT",
+                status: "active",
+                softCap: 10,
+                hardCap: 50,
+                raised: 22.5,
+                backers: 45,
+                progress: 45,
+                startDate: "2026-01-01",
+                endDate: "2026-03-01",
+                image: "🎓"
+            },
+            {
+                id: 2,
+                title: "DeFi Sustainability Hub",
+                creator: "0x5678...1234",
+                description: "Criando ferramentas para tornar DeFi mais sustentável e eco-friendly",
+                status: "active",
+                softCap: 5,
+                hardCap: 30,
+                raised: 18.3,
+                backers: 32,
+                progress: 61,
+                startDate: "2025-12-15",
+                endDate: "2026-02-15",
+                image: "🌱"
+            },
+            {
+                id: 3,
+                title: "Healthcare NFT Registry",
+                creator: "0xabcd...efgh",
+                description: "Registro descentralizado de documentos médicos com privacidade garantida",
+                status: "pending",
+                softCap: 15,
+                hardCap: 60,
+                raised: 8.5,
+                backers: 12,
+                progress: 14,
+                startDate: "2026-02-01",
+                endDate: "2026-04-01",
+                image: "🏥"
+            }
+        ];
+
+        // ============================================
+        // WALLET CONNECTION
+        // ============================================
+
+        document.getElementById('walletBtn').addEventListener('click', async () => {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+                    userAddress = accounts[0];
+                    signer = await provider.getSigner();
+
+                    const walletBtn = document.getElementById('walletBtn');
+                    walletBtn.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                    walletBtn.classList.add('connected');
+
+                    loadUserData();
+                } else {
+                    alert('Por favor, instale MetaMask ou outro wallet Web3');
+                }
+            } catch (error) {
+                console.error('Erro ao conectar wallet:', error);
+                alert('Erro ao conectar wallet: ' + error.message);
+            }
+        });
+
+        // ============================================
+        // NAVIGATION
+        // ============================================
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                const screenId = e.target.dataset.screen;
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(screenId).classList.add('active');
+
+                // Load screen data
+                loadScreenData(screenId);
+            });
+        });
+
+        // ============================================
+        // LOAD SCREEN DATA
+        // ============================================
+
+        function loadScreenData(screenId) {
+            switch (screenId) {
+                case 'home':
+                    loadHomeData();
+                    break;
+                case 'explore':
+                    loadExploreData();
+                    break;
+                case 'details':
+                    loadDetailsData();
+                    break;
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'portfolio':
+                    loadPortfolioData();
+                    break;
+                case 'governance':
+                    loadGovernanceData();
+                    break;
+                case 'treasury':
+                    loadTreasuryData();
+                    break;
+                case 'create':
+                    loadCreateData();
+                    break;
+            }
+        }
+
+        // ============================================
+        // SCREEN 01: HOME
+        // ============================================
+
+        function loadHomeData() {
+            // Stats
+            const totalRaised = mockCampaigns.reduce((sum, c) => sum + c.raised, 0);
+            const activeCampaigns = mockCampaigns.filter(c => c.status === 'active').length;
+            const totalBackers = mockCampaigns.reduce((sum, c) => sum + c.backers, 0);
+
+            document.getElementById('totalRaised').textContent = `${totalRaised.toFixed(1)} ETH`;
+            document.getElementById('activeCampaigns').textContent = activeCampaigns;
+            document.getElementById('ethPrice').textContent = `$${ethPrice.toLocaleString()}`;
+            document.getElementById('totalBackers').textContent = totalBackers;
+
+            // Cards
+            const homeCards = document.getElementById('homeCards');
+            homeCards.innerHTML = '';
+
+            mockCampaigns.slice(0, 3).forEach(campaign => {
+                homeCards.innerHTML += createCampaignCard(campaign);
+            });
+        }
+
+        // ============================================
+        // SCREEN 02: EXPLORE
+        // ============================================
+
+        async function loadExploreData() {
+            const exploreCards = document.getElementById('exploreCards');
+            exploreCards.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;"><div class="spinner"></div> Carregando campanhas da blockchain...</div>';
+
+            await fetchOnChainCampaigns();
+            renderExploreCards('all');
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const allCampaigns = [...onChainCampaigns, ...mockCampaigns];
+                const filtered = allCampaigns.filter(c =>
+                    c.title.toLowerCase().includes(query) ||
+                    c.description.toLowerCase().includes(query)
+                );
+
+                const exploreCards = document.getElementById('exploreCards');
+                exploreCards.innerHTML = '';
+                filtered.forEach(campaign => {
+                    exploreCards.innerHTML += createCampaignCard(campaign);
+                });
+            });
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    renderExploreCards(e.target.dataset.filter);
+                });
+            });
+        }
+
+        function renderExploreCards(filter) {
+            const exploreCards = document.getElementById('exploreCards');
+            exploreCards.innerHTML = '';
+
+            // Combinar campanhas on-chain com mock fallback
+            const allCampaigns = [...onChainCampaigns, ...mockCampaigns];
+
+            let filtered = allCampaigns;
+            if (filter === 'active') {
+                filtered = allCampaigns.filter(c => c.status === 'active');
+            } else if (filter === 'pending') {
+                filtered = allCampaigns.filter(c => c.status === 'pending');
+            } else if (filter === 'completed') {
+                filtered = allCampaigns.filter(c => c.status === 'completed');
+            }
+
+            if (filtered.length === 0) {
+                exploreCards.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">Nenhuma campanha encontrada.</div>';
+                return;
+            }
+
+            filtered.forEach(campaign => {
+                exploreCards.innerHTML += createCampaignCard(campaign);
+            });
+        }
+
+        function createCampaignCard(campaign) {
+            const statusBadge = {
+                'active': '<span class="badge active">Ativo</span>',
+                'pending': '<span class="badge pending">Pendente</span>',
+                'completed': '<span class="badge rejected">Finalizado</span>'
+            };
+
+            const badge = campaign.statusLabel
+                ? `<span class="badge ${campaign.status === 'active' ? 'active' : campaign.status === 'pending' ? 'pending' : 'rejected'}">${campaign.statusLabel}</span>`
+                : (statusBadge[campaign.status] || '');
+
+            const onChainTag = campaign.onChain
+                ? '<span style="font-size:10px; background:rgba(96,165,250,0.15); color:#60a5fa; padding:2px 6px; border-radius:4px; margin-left:6px;">On-Chain</span>'
+                : '';
+
+            const raisedLabel = campaign.onChain
+                ? `$${campaign.raised.toFixed(2)} / $${campaign.hardCap.toFixed(2)} USD`
+                : `${campaign.raised} / ${campaign.hardCap} ETH`;
+
+            const addressLine = campaign.address
+                ? `<div class="card-stat"><span class="stat-label">Contrato</span><span class="stat-value" style="font-size:11px;">${campaign.address.slice(0, 6)}...${campaign.address.slice(-4)}</span></div>`
+                : '';
+
+            return `
+                <div class="card" onclick="viewCampaignDetails(${campaign.id})">
+                    <div class="card-header">
+                        <div class="card-title">${campaign.image} ${campaign.title}${onChainTag}</div>
+                        ${badge}
+                    </div>
+                    <div class="card-body">
+                        <div class="card-stat">
+                            <span class="stat-label">Arrecadado</span>
+                            <span class="stat-value">${raisedLabel}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${campaign.progress}%"></div>
+                        </div>
+                        <div class="card-stat">
+                            <span class="stat-label">Período</span>
+                            <span class="stat-value">${campaign.startDate || '—'} → ${campaign.endDate || '—'}</span>
+                        </div>
+                        ${addressLine}
+                        <div class="card-stat">
+                            <span class="stat-label">Criador</span>
+                            <span class="stat-value">${campaign.creator}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary">Ver Detalhes</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function viewCampaignDetails(campaignId) {
+            // Switch to details screen
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-screen="details"]').classList.add('active');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('details').classList.add('active');
+
+            // Verificar se é uma campanha on-chain
+            const onChain = onChainCampaigns.find(c => c.id === campaignId);
+            if (onChain && onChain.address) {
+                loadOnChainCampaignDetails(onChain.address);
+            } else {
+                loadCampaignDetailsForId(campaignId);
+            }
+        }
+
+        // ============================================
+        // SCREEN 03: DETAILS
+        // ============================================
+
+        let currentCampaignId = 1;
+
+        function loadDetailsData() {
+            loadCampaignDetailsForId(currentCampaignId);
+        }
+
+        function loadCampaignDetailsForId(campaignId) {
+            currentCampaignId = campaignId;
+            const campaign = mockCampaigns.find(c => c.id === campaignId);
+
+            if (!campaign) return;
+
+            document.getElementById('detailsLoading').style.display = 'none';
+            document.getElementById('detailsContent').style.display = 'block';
+
+            document.getElementById('campaignTitle').textContent = campaign.title;
+            document.getElementById('campaignCreator').textContent = campaign.creator;
+            document.getElementById('campaignStatus').textContent = campaign.status;
+            document.getElementById('campaignSoftCap').textContent = `${campaign.softCap} ETH`;
+            document.getElementById('campaignHardCap').textContent = `${campaign.hardCap} ETH`;
+            document.getElementById('campaignRaised').textContent = `${campaign.raised} ETH`;
+            document.getElementById('campaignBackers').textContent = campaign.backers;
+            document.getElementById('detailsProgress').style.width = `${campaign.progress}%`;
+
+            document.getElementById('oraclePrice').textContent = `$${ethPrice}`;
+            document.getElementById('oracleTimestamp').textContent = new Date().toLocaleString();
+
+            // Dates
+            document.getElementById('campaignStart').textContent = campaign.startDate;
+            document.getElementById('campaignEnd').textContent = campaign.endDate;
+            document.getElementById('campaignTimeLeft').textContent = '45 dias';
+
+            // Tiers mock
+            currentCampaignTiers = [
+                { id: 1, name: '🥉 Bronze', minAmount: '0.1', bonus: 5, description: 'NFT exclusivo + certificado' },
+                { id: 2, name: '🥈 Prata', minAmount: '0.5', bonus: 10, description: 'Tudo do Bronze + Agradecimento Público' },
+                { id: 3, name: '🥇 Ouro', minAmount: '1.0', bonus: 15, description: 'Tudo da Prata + 2x Multiplicador AGT' }
+            ];
+            selectedTierId = currentCampaignTiers[0]?.id || null;
+            renderTierDetails(currentCampaignTiers, false);
+
+            // Contribute button
+            document.getElementById('contributeBtn').onclick = () => contributeToCampaign(campaignId);
+        }
+
+        async function loadOnChainCampaignDetails(campaignAddress) {
+            document.getElementById('detailsLoading').style.display = 'block';
+            document.getElementById('detailsLoading').innerHTML = '<div class="spinner"></div> Carregando dados da blockchain...';
+            document.getElementById('detailsContent').style.display = 'none';
+
+            try {
+                const rpcProvider = provider || new ethers.JsonRpcProvider('https://eth-sepolia.g.alchemy.com/v2/ISqOLUfXDzgFu0-5ronlzwri_xFU4rZf');
+                const campContract = new ethers.Contract(campaignAddress, ABI_CAMPAIGN_READ, rpcProvider);
+
+                const [cfg, raised, bal, st] = await Promise.all([
+                    campContract.config(),
+                    campContract.totalRaisedUSD(),
+                    campContract.balance(),
+                    campContract.status()
+                ]);
+
+                const softCapUsd = Number(cfg.softCap) / 1e8;
+                const hardCapUsd = Number(cfg.hardCap) / 1e8;
+                const raisedUsd = Number(raised) / 1e8;
+                const balEth = Number(ethers.formatEther(bal));
+                const statusNum = Number(st);
+                const progress = hardCapUsd > 0 ? Math.min(100, Math.round((raisedUsd / hardCapUsd) * 100)) : 0;
+                const creator = cfg.proponente;
+                const tierManagerAddr = cfg.tierManager;
+
+                const startDate = new Date(Number(cfg.startTime) * 1000);
+                const endDate = new Date(Number(cfg.endTime) * 1000);
+                const now = new Date();
+                const diffMs = endDate - now;
+                const daysLeft = diffMs > 0 ? Math.ceil(diffMs / (1000 * 60 * 60 * 24)) : 0;
+
+                // Preencher dados na tela
+                document.getElementById('detailsLoading').style.display = 'none';
+                document.getElementById('detailsContent').style.display = 'block';
+
+                document.getElementById('campaignTitle').textContent = `Campanha ${campaignAddress.slice(0, 6)}...${campaignAddress.slice(-4)}`;
+                document.getElementById('campaignCreator').textContent = `${creator.slice(0, 6)}...${creator.slice(-4)}`;
+                document.getElementById('campaignStatus').textContent = STATUS_LABEL[statusNum] || 'Desconhecido';
+                document.getElementById('campaignSoftCap').textContent = `$${softCapUsd.toFixed(2)} USD`;
+                document.getElementById('campaignHardCap').textContent = `$${hardCapUsd.toFixed(2)} USD`;
+                document.getElementById('campaignRaised').textContent = `$${raisedUsd.toFixed(2)} USD (${balEth.toFixed(4)} ETH)`;
+                document.getElementById('campaignBackers').textContent = '—';
+                document.getElementById('detailsProgress').style.width = `${progress}%`;
+
+                document.getElementById('oraclePrice').textContent = `$${ethPrice.toFixed(0)}`;
+                document.getElementById('oracleTimestamp').textContent = new Date().toLocaleString('pt-BR');
+
+                document.getElementById('campaignStart').textContent = startDate.toLocaleDateString('pt-BR') + ' ' + startDate.toLocaleTimeString('pt-BR');
+                document.getElementById('campaignEnd').textContent = endDate.toLocaleDateString('pt-BR') + ' ' + endDate.toLocaleTimeString('pt-BR');
+                document.getElementById('campaignTimeLeft').textContent = daysLeft > 0 ? `${daysLeft} dias` : 'Encerrada';
+
+                // Carregar Tiers do TierManager
+                await loadOnChainTiers(tierManagerAddr, rpcProvider);
+
+                // Contribute button (on-chain)
+                document.getElementById('contributeBtn').onclick = () => contributeOnChain(campaignAddress);
+
+            } catch (err) {
+                console.error('Erro ao carregar detalhes on-chain:', err);
+                document.getElementById('detailsLoading').innerHTML = `<div style="color:#ef4444;">❌ Erro ao carregar: ${err.message}</div>`;
+            }
+        }
+
+        async function loadOnChainTiers(tierManagerAddr, rpcProvider) {
+            const tiersContainer = document.getElementById('tiersDetailContainer');
+            tiersContainer.innerHTML = '<div style="text-align:center; padding:12px; color:#94a3b8;"><div class="spinner"></div> Carregando tiers...</div>';
+
+            try {
+                const tmContract = new ethers.Contract(tierManagerAddr, ABI_TIER_MANAGER_READ, rpcProvider);
+                const total = Number(await tmContract.totalTiers());
+
+                if (total === 0) {
+                    tiersContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">Nenhum tier criado ainda.</div>';
+                    return;
+                }
+
+                const tierColors = ['#60a5fa', '#fbbf24', '#d97706', '#10b981', '#8b5cf6', '#ef4444'];
+                const tierIcons = ['🥉', '🥈', '🥇', '💎', '👑', '🌟'];
+                const tiers = [];
+
+                for (let i = 1; i <= total; i++) {
+                    try {
+                        const tier = await tmContract.getTierMetadata(i);
+                        const minUsd = Number(tier.minAmountUSD) / 1e8;
+                        const color = tierColors[(i - 1) % tierColors.length];
+                        const icon = tierIcons[(i - 1) % tierIcons.length];
+                        const priceMode = Number(tier.priceMode) === 0 ? 'Fixo (USD)' : 'Dinâmico (ETH)';
+
+                        tiers.push({
+                            id: Number(tier.id),
+                            name: tier.name,
+                            minAmountUSD: minUsd,
+                            maxSupply: Number(tier.maxSupply),
+                            minted: Number(tier.minted),
+                            bonus: tier.bonus || 0,
+                            priceMode: Number(tier.priceMode),
+                            color,
+                            icon,
+                            description: tier.metadataURI || ''
+                        });
+                    } catch (tierErr) {
+                        console.warn(`Erro ao ler tier ${i}:`, tierErr);
+                    }
+                }
+
+                currentCampaignTiers = tiers;
+                selectedTierId = tiers[0]?.id || null;
+                renderTierDetails(currentCampaignTiers, true);
+            } catch (err) {
+                console.error('Erro ao carregar tiers:', err);
+                tiersContainer.innerHTML = '<div style="color:#ef4444;">❌ Erro ao carregar tiers</div>';
+            }
+        }
+
+        function renderTierDetails(tiers, isOnChain) {
+            const tiersContainer = document.getElementById('tiersDetailContainer');
+            if (!tiersContainer) return;
+
+            if (!tiers || tiers.length === 0) {
+                tiersContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">Nenhum tier encontrado.</div>';
+                return;
+            }
+
+            const html = tiers.map(tier => {
+                const selected = tier.id === selectedTierId;
+                const borderColor = selected ? '#10b981' : (tier.color || '#60a5fa');
+                const background = selected ? 'rgba(16, 185, 129, 0.08)' : 'rgba(148, 163, 184, 0.08)';
+                const selectedBadge = selected ? '<div style="font-size:12px; color:#10b981; font-weight:700; margin-bottom:8px;">✓ Selecionado</div>' : '';
+                const priceMode = tier.priceMode === 1 ? 'Dinâmico (ETH)' : 'Fixo (USD)';
+                const minAmountLabel = isOnChain
+                    ? (tier.minAmountUSD != null ? `$${tier.minAmountUSD.toFixed(2)} USD` : 'N/A')
+                    : `${tier.minAmount || 'N/A'} ETH`;
+                const supplyText = tier.maxSupply != null ? (tier.maxSupply === 0 ? 'Ilimitado' : `${tier.minted || 0}/${tier.maxSupply}`) : 'Ilimitado';
+
+                return `
+                    <div class="tier-card" data-tier-id="${tier.id}" onclick="selectTier(${tier.id})" style="background: ${background}; padding: 16px; border-radius: 8px; border-left: 3px solid ${borderColor}; cursor: pointer; transition: all 0.2s ease;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                            <div style="font-weight: 600; font-size: 15px;">${tier.name}</div>
+                            <span style="font-size:12px; color:#94a3b8;">ID: ${tier.id}</span>
+                        </div>
+                        ${selectedBadge}
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Mínimo: ${minAmountLabel}</div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Bônus: +${tier.bonus}%</div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Supply: ${supplyText}</div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Modo: ${priceMode}</div>
+                        <div style="font-size: 12px; color: #e2e8f0; margin-top: 10px;">${tier.description || ''}</div>
+                    </div>
+                `;
+            }).join('');
+
+            tiersContainer.innerHTML = html;
+            updateSelectedTierHint();
+        }
+
+        function selectTier(tierId) {
+            selectedTierId = tierId;
+            document.querySelectorAll('#tiersDetailContainer .tier-card').forEach(card => {
+                const id = Number(card.dataset.tierId);
+                card.style.background = id === tierId ? 'rgba(16, 185, 129, 0.08)' : 'rgba(148, 163, 184, 0.08)';
+                card.style.borderLeftColor = id === tierId ? '#10b981' : '#60a5fa';
+            });
+            updateSelectedTierHint();
+        }
+
+        function updateSelectedTierHint() {
+            const hint = document.getElementById('tierSelectionHint');
+            if (!hint) return;
+
+            if (!selectedTierId) {
+                hint.textContent = 'Selecione um tier para contribuir.';
+                return;
+            }
+
+            const tier = currentCampaignTiers.find(t => t.id === selectedTierId);
+            hint.textContent = tier ? `Tier selecionado: ${tier.name} — mínimo ${tier.minAmount || (tier.minAmountUSD ? `$${tier.minAmountUSD.toFixed(2)} USD` : '-')}` : 'Selecione um tier para contribuir.';
+        }
+
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+
+        async function contributeOnChain(campaignAddress) {
+            if (!userAddress || !signer) {
+                alert('Por favor, conecte sua wallet primeiro');
+                return;
+            }
+            const amount = document.getElementById('contributeAmount').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                alert('Por favor, insira um valor válido');
+                return;
+            }
+            try {
+                const statusDiv = document.getElementById('contributeStatus');
+                statusDiv.innerHTML = '<div class="tx-status pending show"><div class="spinner"></div> Assinando transação...</div>';
+
+                const ABI_CONTRIBUTE = ["function contribute(uint256 tierId) external payable"];
+                const campContract = new ethers.Contract(campaignAddress, ABI_CONTRIBUTE, signer);
+                const tierId = selectedTierId || 1; // Usa tier selecionado ou fallback para Bronze
+                const tx = await campContract.contribute(tierId, { value: ethers.parseEther(amount) });
+
+                statusDiv.innerHTML = `<div class="tx-status pending show"><div class="spinner"></div> Transação enviada para o tier ${tierId}! Aguardando confirmação...</div>`;
+                const receipt = await tx.wait();
+
+                statusDiv.innerHTML = `
+                    <div class="tx-status success show">
+                        ✅ Contribuição confirmada!<br>
+                        Hash: <a href="https://sepolia.etherscan.io/tx/${receipt.hash}" target="_blank" style="color: #60a5fa">${receipt.hash}</a>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao contribuir:', error);
+                document.getElementById('contributeStatus').innerHTML = `
+                    <div class="tx-status error show">❌ Erro: ${error.reason || error.message}</div>
+                `;
+            }
+        }
+
+        function contributeToCampaign(campaignId) {
+            if (!userAddress) {
+                alert('Por favor, conecte sua wallet primeiro');
+                return;
+            }
+
+            const selectedTier = currentCampaignTiers.find(t => t.id === selectedTierId) || currentCampaignTiers[0];
+            if (!selectedTier) {
+                alert('Nenhum tier disponível para contribuição');
+                return;
+            }
+
+            const amount = document.getElementById('contributeAmount').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                alert('Por favor, insira um valor válido');
+                return;
+            }
+
+            const statusDiv = document.getElementById('contributeStatus');
+            statusDiv.innerHTML = '<div class="tx-status pending show"><div class="spinner"></div> Aguardando ação...</div>';
+
+            // Mock contribution flow para campanhas não on-chain
+            setTimeout(() => {
+                statusDiv.innerHTML = `
+                    <div class="tx-status success show">
+                        ✅ Contribuição registrada no tier ${selectedTier.name}!<br>
+                        Valor: ${amount} ETH<br>
+                        Tier: ${selectedTier.name}
+                    </div>
+                `;
+            }, 1200);
+        }
+
+        async function contributeToOUTPUT(campaignId) {
+            // Route contributions to on-chain campaign or mock flow depending on campaignId
+            const statusDiv = document.getElementById('contributeStatus');
+            try {
+                // If an address string was passed, treat as on-chain address
+                if (typeof campaignId === 'string' && campaignId.startsWith('0x') && campaignId.length === 42) {
+                    await contributeOnChain(campaignId);
+                    return;
+                }
+
+                const cid = Number(campaignId);
+                const onChain = onChainCampaigns.find(c => Number(c.id) === cid);
+
+                if (onChain && onChain.address) {
+                    await contributeOnChain(onChain.address);
+                } else {
+                    // Fallback to mock/local contribution flow
+                    contributeToCampaign(cid);
+                }
+            } catch (error) {
+                console.error('Erro em contributeToOUTPUT:', error);
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<div class="tx-status error show">❌ Erro: ${error.message || error}</div>`;
+                }
+            }
+        }
+
+        // ============================================
+        // SCREEN 04: DASHBOARD
+        // ============================================
+
+        async function loadDashboardData() {
+            const dashboardCards = document.getElementById('dashboardCards');
+            dashboardCards.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;"><div class="spinner"></div> Buscando suas campanhas na blockchain...</div>';
+
+            // Resetar estatísticas
+            document.getElementById('dashCampaignCount').textContent = '—';
+            document.getElementById('dashTotalRaised').textContent = '—';
+            document.getElementById('dashBackerCount').textContent = '—';
+            document.getElementById('withdrawalBalance').textContent = '—';
+
+            // Require wallet connection
+            if (!userAddress) {
+                dashboardCards.innerHTML = `
+                    <div style="text-align:center; padding:40px; color:#94a3b8; grid-column: 1/-1;">
+                        🔗 Conecte sua wallet para ver suas campanhas.
+                    </div>`;
+                return;
+            }
+
+            try {
+                const rpcProvider = provider || new ethers.JsonRpcProvider('https://eth-sepolia.g.alchemy.com/v2/ISqOLUfXDzgFu0-5ronlzwri_xFU4rZf');
+                const factoryContract = new ethers.Contract(CONTRACTS.CAMPAIGN_FACTORY, ABI_CAMPAIGN_FACTORY_READ, rpcProvider);
+
+                const addresses = await factoryContract.getAllCampaigns();
+
+                const STATUS_MAP = { 0: 'active', 1: 'active', 2: 'active', 3: 'completed', 4: 'completed', 5: 'completed' };
+                const STATUS_LABEL = { 0: 'Ativa', 1: 'Encerrada (Sucesso)', 2: 'Aprovada', 3: 'Falhou', 4: 'Rejeitada', 5: 'Sacada' };
+
+                let myCampaigns = [];
+                let totalRaisedEth = 0;
+                let totalWithdrawable = 0;
+
+                for (const addr of addresses) {
+                    try {
+                        const campContract = new ethers.Contract(addr, ABI_CAMPAIGN_READ, rpcProvider);
+                        const [cfg, raised, bal, st] = await Promise.all([
+                            campContract.config(),
+                            campContract.totalRaisedUSD(),
+                            campContract.balance(),
+                            campContract.status()
+                        ]);
+
+                        // Filtrar somente campanhas do proponente conectado
+                        if (cfg.proponente.toLowerCase() !== userAddress.toLowerCase()) continue;
+
+                        const softCapUsd = Number(cfg.softCap) / 1e8;
+                        const hardCapUsd = Number(cfg.hardCap) / 1e8;
+                        const raisedUsd = Number(raised) / 1e8;
+                        const balEth = parseFloat(ethers.formatEther(bal));
+                        const statusNum = Number(st);
+                        const progress = hardCapUsd > 0 ? Math.min(100, Math.round((raisedUsd / hardCapUsd) * 100)) : 0;
+
+                        totalRaisedEth += balEth;
+                        // Campanha aprovada (status 2) pode solicitar saque
+                        if (statusNum === 2) totalWithdrawable += balEth;
+
+                        myCampaigns.push({
+                            id: addr,           // usar endereço como ID único
+                            address: addr,
+                            title: `Campanha ${addr.slice(0, 6)}...${addr.slice(-4)}`,
+                            creator: `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`,
+                            creatorFull: userAddress,
+                            description: `Soft Cap: $${softCapUsd.toFixed(2)} | Hard Cap: $${hardCapUsd.toFixed(2)}`,
+                            status: STATUS_MAP[statusNum] || 'active',
+                            statusLabel: STATUS_LABEL[statusNum] || 'Desconhecido',
+                            statusNum,
+                            softCap: softCapUsd,
+                            hardCap: hardCapUsd,
+                            raised: raisedUsd,
+                            raisedETH: balEth,
+                            backers: '—',
+                            progress,
+                            startDate: new Date(Number(cfg.startTime) * 1000).toLocaleDateString('pt-BR'),
+                            endDate: new Date(Number(cfg.endTime) * 1000).toLocaleDateString('pt-BR'),
+                            image: '🚀',
+                            onChain: true
+                        });
+                    } catch (e) {
+                        console.warn('Erro ao ler campanha:', addr, e);
+                    }
+                }
+
+                // Atualizar estatísticas
+                document.getElementById('dashCampaignCount').textContent = myCampaigns.length;
+                document.getElementById('dashTotalRaised').textContent = `${totalRaisedEth.toFixed(4)} ETH`;
+                document.getElementById('dashBackerCount').textContent = '—';
+                document.getElementById('withdrawalBalance').textContent = `${totalWithdrawable.toFixed(4)} ETH`;
+
+                if (myCampaigns.length === 0) {
+                    dashboardCards.innerHTML = `
+                        <div style="text-align:center; padding:40px; color:#94a3b8; grid-column:1/-1;">
+                            Nenhuma campanha encontrada para este endereço.<br>
+                            <button class="btn btn-primary" style="margin-top:16px;" onclick="navigateTo('create')">➕ Criar Primeira Campanha</button>
+                        </div>`;
+                    return;
+                }
+
+                dashboardCards.innerHTML = '';
+                myCampaigns.forEach(campaign => {
+                    dashboardCards.innerHTML += createDashboardCampaignCard(campaign);
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar Dashboard:', error);
+                dashboardCards.innerHTML = `<div style="text-align:center; padding:40px; color:#ef4444; grid-column:1/-1;">❌ Falha ao conectar com a blockchain. Verifique o endereço da CampaignFactory.</div>`;
+            }
+        }
+
+        function createDashboardCampaignCard(campaign) {
+            const statusColors = {
+                'active': { badge: 'active', bg: 'rgba(16,185,129,0.08)', border: '#10b981' },
+                'completed': { badge: 'rejected', bg: 'rgba(239,68,68,0.06)', border: '#ef4444' },
+                'pending': { badge: 'pending', bg: 'rgba(251,191,36,0.06)', border: '#fbbf24' }
+            };
+            const sc = statusColors[campaign.status] || statusColors['active'];
+            const canWithdraw = campaign.statusNum === 2;
+
+            return `
+                <div style="background:${sc.bg}; border:1px solid ${sc.border}33; border-radius:12px; padding:20px; display:flex; flex-direction:column; gap:12px; transition: transform 0.2s, box-shadow 0.2s;"
+                     onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)'"
+                     onmouseout="this.style.transform=''; this.style.boxShadow=''">
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                        <div style="font-weight:700; font-size:15px; color:#f1f5f9;">${campaign.image} ${campaign.title}</div>
+                        <span class="badge ${sc.badge}" style="white-space:nowrap; flex-shrink:0;">${campaign.statusLabel}</span>
+                    </div>
+
+                    <div style="font-size:12px; color:#60a5fa; font-family:monospace;">${campaign.address}</div>
+
+                    <div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; margin-bottom:6px;">
+                            <span>Arrecadado: <strong style="color:#f1f5f9;">$${campaign.raised.toFixed(2)} USD</strong></span>
+                            <span>${campaign.progress}%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${campaign.progress}%"></div></div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-top:4px;">
+                            <span>Soft: $${campaign.softCap.toFixed(0)}</span>
+                            <span>Hard: $${campaign.hardCap.toFixed(0)}</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8;">
+                        <span>📅 ${campaign.startDate} → ${campaign.endDate}</span>
+                        <span>💰 ${campaign.raisedETH.toFixed(4)} ETH</span>
+                    </div>
+
+                    <div style="display:flex; gap:8px; margin-top:4px;">
+                        <button class="btn btn-primary" style="flex:1; font-size:13px;"
+                            onclick="viewCampaignDetailsByAddress('${campaign.address}')">
+                            🔍 Ver Detalhes
+                        </button>
+                        ${canWithdraw ? `<button class="btn btn-secondary" style="flex:1; font-size:13px;"
+                            onclick="requestWithdrawalFor('${campaign.address}')">
+                            💸 Solicitar Saque
+                        </button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function viewCampaignDetailsByAddress(address) {
+            // Navega para a tela de detalhes e carrega via endereço do contrato
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            const detailsBtn = document.querySelector('[data-screen="details"]');
+            if (detailsBtn) detailsBtn.classList.add('active');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('details').classList.add('active');
+            loadOnChainCampaignDetails(address);
+        }
+
+        function navigateTo(screenId) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            const btn = document.querySelector(`[data-screen="${screenId}"]`);
+            if (btn) btn.classList.add('active');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            loadScreenData(screenId);
+        }
+
+        async function requestWithdrawalFor(campaignAddress) {
+            if (!userAddress || !signer) {
+                alert('Conecte sua wallet primeiro.');
+                return;
+            }
+            try {
+                const ABI_WD = ["function requestWithdrawal() external"];
+                const camp = new ethers.Contract(campaignAddress, ABI_WD, signer);
+                const tx = await camp.requestWithdrawal();
+                alert('⏳ Solicitação de saque enviada! Aguarde confirmação...');
+                await tx.wait();
+                alert('✅ Saque solicitado com sucesso! A DAO irá aprovar.');
+                loadDashboardData();
+            } catch (e) {
+                alert('❌ Erro: ' + (e.reason || e.message));
+            }
+        }
+
+        // ============================================
+        // SCREEN 05: PORTFOLIO
+        // ============================================
+
+        async function loadPortfolioData() {
+            if (!userAddress) {
+                document.getElementById('nftCards').innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">❌ Conecte sua wallet para ver seu portfólio</div>';
+                return;
+            }
+
+            const nftCards = document.getElementById('nftCards');
+            nftCards.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;"><div class="spinner"></div> Carregando seus NFTs e vouchers...</div>';
+
+            try {
+                const rpcProvider = provider || new ethers.JsonRpcProvider('https://eth-sepolia.g.alchemy.com/v2/ISqOLUfXDzgFu0-5ronlzwri_xFU4rZf');
+
+                // Buscar todas as campanhas
+                const factory = new ethers.Contract(CONTRACTS.CAMPAIGN_FACTORY, ABI_CAMPAIGN_FACTORY_READ, rpcProvider);
+                const campaignAddresses = await factory.getAllCampaigns();
+
+                let userNFTs = [];
+                const tierIcons = ['🥉', '🥈', '🥇', '💎', '👑', '🌟'];
+                const tierColors = ['#60a5fa', '#fbbf24', '#d97706', '#10b981', '#8b5cf6', '#ef4444'];
+
+                // Para cada campanha, buscar os tiers do usuário
+                for (let campIdx = 0; campIdx < campaignAddresses.length; campIdx++) {
+                    try {
+                        const campaignAddr = campaignAddresses[campIdx];
+                        const campaign = new ethers.Contract(campaignAddr, ABI_CAMPAIGN_READ, rpcProvider);
+                        const cfg = await campaign.config();
+                        const tierManagerAddr = cfg.tierManager;
+
+                        const tierMgr = new ethers.Contract(tierManagerAddr, ABI_TIER_MANAGER_READ, rpcProvider);
+                        const totalTiers = Number(await tierMgr.totalTiers());
+
+                        // Buscar NFTs do usuário em cada tier
+                        for (let tierId = 1; tierId <= totalTiers; tierId++) {
+                            try {
+                                const balance = Number(await tierMgr.balanceOf(userAddress, tierId));
+                                if (balance > 0) {
+                                    const tierMeta = await tierMgr.getTierMetadata(tierId);
+                                    const icon = tierIcons[(tierId - 1) % tierIcons.length];
+                                    const color = tierColors[(tierId - 1) % tierColors.length];
+
+                                    userNFTs.push({
+                                        campaignAddr: campaignAddr,
+                                        tierId: tierId,
+                                        tierName: tierMeta.name,
+                                        balance: balance,
+                                        icon: icon,
+                                        color: color,
+                                        minAmountUSD: Number(tierMeta.minAmountUSD) / 1e8
+                                    });
+                                }
+                            } catch (err) {
+                                console.warn(`Erro ao buscar tier ${tierId}:`, err);
+                            }
+                        }
+                    } catch (err) {
+                        console.warn(`Erro ao buscar campanha ${campaignAddresses[campIdx]}:`, err);
+                    }
+                }
+
+                // Renderizar NFTs encontrados
+                if (userNFTs.length === 0) {
+                    nftCards.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">Você ainda não possui vouchers/NFTs. Comece a apoiar campanhas! 🚀</div>';
+                } else {
+                    nftCards.innerHTML = '';
+                    userNFTs.forEach((nft, idx) => {
+                        nftCards.innerHTML += `
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">${nft.icon} ${nft.tierName}</div>
+                                    <span class="badge active">×${nft.balance}</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-stat">
+                                        <span class="stat-label">Quantidade</span>
+                                        <span class="stat-value">${nft.balance}</span>
+                                    </div>
+                                    <div class="card-stat">
+                                        <span class="stat-label">Mínimo</span>
+                                        <span class="stat-value">$${nft.minAmountUSD.toFixed(2)} USD</span>
+                                    </div>
+                                    <div class="card-stat">
+                                        <span class="stat-label">Contrato</span>
+                                        <span class="stat-value" style="font-size: 11px;">${nft.campaignAddr.slice(0, 6)}...${nft.campaignAddr.slice(-4)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Buscar AGT balance
+                const agtContract = new ethers.Contract(CONTRACTS.AGT_TOKEN, ABI_AGT_READ, rpcProvider);
+                const agtBalance = Number(ethers.formatEther(await agtContract.balanceOf(userAddress)));
+
+                let stakingPositions = [];
+                let votingMultiplier = '1x';
+                try {
+                    const stakingContract = new ethers.Contract(CONTRACTS.STAKING_AGT, ABI_STAKING_AGT_READ, rpcProvider);
+                    const positionIds = await stakingContract.getHolderPositions(userAddress);
+
+                    for (const positionId of positionIds) {
+                        const position = await stakingContract.getPosition(positionId);
+                        if (!position.withdrawn) {
+                            stakingPositions.push(position);
+                        }
+                    }
+
+                    if (stakingPositions.length > 0) {
+                        if (stakingPositions.some(pos => Number(pos.lockDuration) >= 31536000)) {
+                            votingMultiplier = '3x';
+                        } else if (stakingPositions.some(pos => Number(pos.lockDuration) >= 15552000)) {
+                            votingMultiplier = '2x';
+                        } else if (stakingPositions.some(pos => Number(pos.lockDuration) >= 7776000)) {
+                            votingMultiplier = '1.5x';
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Staking contract error (may not be deployed):', err.message);
+                }
+
+                const vestingTimeline = document.getElementById('vestingTimeline');
+                if (stakingPositions.length > 0) {
+                    const now = Date.now();
+                    const totalLocked = stakingPositions.reduce((sum, pos) => sum + Number(ethers.formatEther(pos.amount)), 0);
+                    const activePositions = stakingPositions.filter(pos => Number(pos.lockEnd) * 1000 > now);
+                    let lockEndDate = new Date(Number(stakingPositions[stakingPositions.length - 1].lockEnd) * 1000);
+                    let startDate = new Date(Number(stakingPositions[0].lockStart) * 1000);
+                    let daysLeft = 0;
+                    let cliffPercent = 100;
+
+                    if (activePositions.length > 0) {
+                        const maxLockEnd = Math.max(...activePositions.map(pos => Number(pos.lockEnd) * 1000));
+                        const earliestStart = Math.min(...activePositions.map(pos => Number(pos.lockStart) * 1000));
+                        lockEndDate = new Date(maxLockEnd);
+                        startDate = new Date(earliestStart);
+                        daysLeft = Math.max(0, Math.ceil((maxLockEnd - now) / (1000 * 60 * 60 * 24)));
+                        cliffPercent = Math.round((Math.min(now, maxLockEnd) - startDate.getTime()) / (maxLockEnd - startDate.getTime()) * 100);
+                    }
+
+                    vestingTimeline.innerHTML = `
+                        <div class="vesting-item">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Lock Period (${totalLocked.toFixed(0)} AGT)</div>
+                            <div style="font-size: 12px; color: #94a3b8;">Início: ${startDate.toLocaleDateString('pt-BR')}</div>
+                        </div>
+                        <div class="vesting-item">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Release ${cliffPercent}% ✓</div>
+                            <div style="font-size: 12px; color: #94a3b8;">Fim: ${lockEndDate.toLocaleDateString('pt-BR')}</div>
+                        </div>
+                        <div class="vesting-item">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Tempo Restante</div>
+                            <div style="font-size: 12px; color: #94a3b8;">${daysLeft > 0 ? daysLeft + ' dias' : 'Desbloqueado'}</div>
+                        </div>
+                    `;
+                } else {
+                    vestingTimeline.innerHTML = `
+                        <div class="vesting-item">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Nenhum AGT em lock</div>
+                            <div style="font-size: 12px; color: #94a3b8;">Faça stake para participar da governança da DAO</div>
+                        </div>
+                    `;
+                }
+
+                if (stakingPositions.length > 0) {
+                    const totalLocked = stakingPositions.reduce((sum, pos) => sum + Number(ethers.formatEther(pos.amount)), 0);
+                    const now = Date.now();
+                    const activePositions = stakingPositions.filter(pos => Number(pos.lockEnd) * 1000 > now);
+                    const maxLockEnd = activePositions.length > 0 ? Math.max(...activePositions.map(pos => Number(pos.lockEnd) * 1000)) : Math.max(...stakingPositions.map(pos => Number(pos.lockEnd) * 1000));
+                    const daysLocked = Math.max(0, Math.ceil((maxLockEnd - now) / (1000 * 60 * 60 * 24)));
+
+                    document.getElementById('stakedAmount').textContent = `${totalLocked.toFixed(2)} AGT`;
+                    document.getElementById('lockTime').textContent = `${daysLocked} dias`;
+                    document.getElementById('votingMultiplier').textContent = votingMultiplier;
+                } else {
+                    document.getElementById('stakedAmount').textContent = `${agtBalance.toFixed(2)} AGT (disponível)`;
+                    document.getElementById('lockTime').textContent = '0 dias';
+                    document.getElementById('votingMultiplier').textContent = '1x';
+                }
+
+                const stakeBtn = document.getElementById('stakeAgtBtn');
+                if (stakeBtn) {
+                    stakeBtn.onclick = stakeAgt;
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar portfólio:', error);
+                nftCards.innerHTML = `<div style="text-align:center; padding:40px; color:#ef4444;">❌ Erro ao carregar portfólio: ${error.message}</div>`;
+            }
+        }
+
+        async function stakeAgt() {
+            const statusEl = document.getElementById('stakeStatus');
+            const amountInput = document.getElementById('stakeAmountInput');
+            const durationSelect = document.getElementById('stakeDurationSelect');
+
+            if (statusEl) {
+                statusEl.textContent = '';
+            }
+
+            if (!signer) {
+                alert('Conecte sua wallet antes de fazer stake.');
+                return;
+            }
+            if (!amountInput || !durationSelect) {
+                return;
+            }
+
+            const amount = Number(amountInput.value);
+            const duration = Number(durationSelect.value);
+            if (!amount || amount <= 0) {
+                alert('Informe uma quantidade válida de AGT para staking.');
+                return;
+            }
+            if (![7776000, 15552000, 31536000].includes(duration)) {
+                alert('Selecione um período de lock válido.');
+                return;
+            }
+
+            try {
+                const amountWei = ethers.parseUnits(amount.toString(), 18);
+                const agtContract = new ethers.Contract(CONTRACTS.AGT_TOKEN, ABI_AGT_READ, signer);
+                const stakingContract = new ethers.Contract(CONTRACTS.STAKING_AGT, ABI_STAKING_AGT_WRITE, signer);
+
+                statusEl.textContent = 'Aprovando AGT para staking...';
+                const approveTx = await agtContract.approve(CONTRACTS.STAKING_AGT, amountWei);
+                await approveTx.wait();
+
+                statusEl.textContent = 'Enviando transação de stake...';
+                const stakeTx = await stakingContract.stake(amountWei, BigInt(duration));
+                await stakeTx.wait();
+
+                statusEl.textContent = 'Stake concluído com sucesso! Atualizando dados...';
+                amountInput.value = '';
+                await loadPortfolioData();
+                if (statusEl) {
+                    statusEl.textContent = 'Stake realizado com sucesso!';
+                }
+            } catch (error) {
+                console.error('Erro ao fazer stake:', error);
+                if (statusEl) {
+                    statusEl.textContent = `Erro ao fazer stake: ${error?.message ?? error}`;
+                }
+            }
+        }
+
+        // ============================================
+        // SCREEN 06: GOVERNANCE
+        // ============================================
+
+        async function loadGovernanceData() {
+            document.getElementById('dualQuorum').textContent = '45%';
+            document.getElementById('circulatingAGT').textContent = '1.2M AGT';
+            document.getElementById('userVotingPower').textContent = userAddress ? '125,000 votes' : '0 votes';
+
+            const proposalCards = document.getElementById('proposalCards');
+            proposalCards.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;"><div class="spinner"></div> Carregando propostas da blockchain...</div>';
+
+            try {
+                const rpcProvider = provider || new ethers.JsonRpcProvider('https://eth-sepolia.g.alchemy.com/v2/ISqOLUfXDzgFu0-5ronlzwri_xFU4rZf');
+                const daoContract = new ethers.Contract(CONTRACTS.APOIA_DAO, ABI_APOIA_DAO, rpcProvider);
+
+                const count = await daoContract.proposalCount();
+                const totalProposals = Number(count);
+
+                document.getElementById('activeProposals').textContent = totalProposals.toString();
+
+                if (totalProposals === 0) {
+                    proposalCards.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">Nenhuma proposta encontrada.</div>';
+                    return;
+                }
+
+                let html = '';
+
+                // Status Mapping (ApoiaDAO.sol: ProposalStatus)
+                const STATUS_LABELS = [
+                    { text: 'Pendente', class: 'pending' },    // 0: PENDING
+                    { text: 'Ativa', class: 'active' },       // 1: ACTIVE
+                    { text: 'Aprovada', class: 'active' },    // 2: SUCCEEDED
+                    { text: 'Derrotada', class: 'rejected' }, // 3: DEFEATED
+                    { text: 'Na Fila', class: 'pending' },    // 4: QUEUED
+                    { text: 'Executada', class: 'active' },   // 5: EXECUTED
+                    { text: 'Cancelada', class: 'rejected' }  // 6: CANCELLED
+                ];
+
+                const TYPE_LABELS = ['Auditoria', 'Upgrade Protocolo', 'Alocação Tesouraria', 'Ajuste de Taxas'];
+
+                for (let i = totalProposals; i >= 1; i--) { // Ordem decrescente (mais recentes primeiro)
+                    try {
+                        const p = await daoContract.getProposal(i);
+
+                        const forVotes = Number(ethers.formatEther(p.forVotes));
+                        const againstVotes = Number(ethers.formatEther(p.againstVotes));
+                        const totalVotes = forVotes + againstVotes;
+                        const forPercentage = totalVotes > 0 ? Math.round((forVotes / totalVotes) * 100) : 0;
+
+                        const statusObj = STATUS_LABELS[Number(p.status)] || { text: 'Desconhecido', class: 'pending' };
+                        const pTypeLabel = TYPE_LABELS[Number(p.pType)] || 'Outro';
+
+                        const endTime = new Date(Number(p.endTime) * 1000);
+                        const now = new Date();
+                        const diffMs = endTime - now;
+                        const daysLeft = diffMs > 0 ? Math.ceil(diffMs / (1000 * 60 * 60 * 24)) : 0;
+                        const timeText = daysLeft > 0 ? `${daysLeft} dias restantes` : 'Encerrada';
+
+                        html += `
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">Proposta #${Number(p.id)}: ${pTypeLabel}</div>
+                                    <span class="badge ${statusObj.class}">${statusObj.text}</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-stat">
+                                        <span class="stat-label">Votos A Favor</span>
+                                        <span class="stat-value">${forPercentage}% (${forVotes.toFixed(0)} votos)</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${forPercentage}%"></div>
+                                    </div>
+                                    <div class="card-stat">
+                                        <span class="stat-label">Criador</span>
+                                        <span class="stat-value" style="font-size: 11px;">${p.proposer.slice(0, 6)}...${p.proposer.slice(-4)}</span>
+                                    </div>
+                                    <div class="card-stat">
+                                        <span class="stat-label">Prazo</span>
+                                        <span class="stat-value">${timeText}</span>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-primary" onclick="voteProposal(${Number(p.id)}, true)" ${Number(p.status) !== 1 ? 'disabled style="opacity: 0.5;"' : ''}>Votar A Favor</button>
+                                    <button class="btn btn-secondary" onclick="voteProposal(${Number(p.id)}, false)" ${Number(p.status) !== 1 ? 'disabled style="opacity: 0.5;"' : ''}>Votar Contra</button>
+                                </div>
+                            </div>
+                        `;
+                    } catch (err) {
+                        console.warn(`Erro ao carregar proposta ${i}:`, err);
+                    }
+                }
+
+                proposalCards.innerHTML = html;
+
+            } catch (error) {
+                console.error("Erro ao carregar governança:", error);
+                proposalCards.innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">❌ Falha ao carregar propostas do contrato. Verifique o endereço APOIA_DAO.</div>';
+            }
+        }
+
+        async function createProposal() {
+            if (!userAddress || !signer) {
+                alert('Por favor, conecte sua wallet primeiro');
+                return;
+            }
+
+            const pType = document.getElementById('propTypeInput').value;
+            const target = document.getElementById('propTargetInput').value;
+            const desc = document.getElementById('propDescInput').value;
+
+            if (!target || !desc) {
+                alert('Por favor, preencha a descrição e o endereço alvo.');
+                return;
+            }
+
+            try {
+                const statusDiv = document.getElementById('propStatus');
+                statusDiv.innerHTML = '<div class="tx-status pending show"><div class="spinner"></div> Assinando transação...</div>';
+
+                const daoContract = new ethers.Contract(CONTRACTS.APOIA_DAO, ABI_APOIA_DAO, signer);
+
+                // pType(uint8), target(address), callData(bytes), description(string)
+                const callData = "0x"; // vazio por padrão para não injetar lixo
+                const tx = await daoContract.propose(pType, target, callData, desc);
+
+                statusDiv.innerHTML = '<div class="tx-status pending show"><div class="spinner"></div> Transação enviada! Aguardando confirmação...</div>';
+
+                const receipt = await tx.wait();
+
+                statusDiv.innerHTML = `
+                    <div class="tx-status success show">
+                        ✅ Proposta criada com sucesso!<br>
+                        Hash: <a href="https://sepolia.etherscan.io/tx/${receipt.hash}" target="_blank" style="color: #60a5fa">${receipt.hash}</a>
+                    </div>
+                `;
+            } catch (error) {
+                console.error("Erro ao criar proposta:", error);
+                document.getElementById('propStatus').innerHTML = `
+                    <div class="tx-status error show">❌ Erro: ${error.message || "Falha na transação"}</div>
+                `;
+            }
+        }
+
+        async function voteProposal(pid, support) {
+            if (!userAddress || !signer) {
+                alert('Por favor, conecte sua wallet primeiro');
+                return;
+            }
+            try {
+                const daoContract = new ethers.Contract(CONTRACTS.APOIA_DAO, ABI_APOIA_DAO, signer);
+                const tx = await daoContract.castVote(pid, support);
+                alert('⏳ Voto assinado! Aguarde a confirmação da rede...');
+                await tx.wait();
+                alert('✅ Voto computado com sucesso!');
+            } catch (e) {
+                console.error("Erro ao votar:", e);
+                alert('❌ Erro ao votar: ' + (e.reason || e.message));
+            }
+        }
+
+        // ============================================
+        // SCREEN 07: TREASURY
+        // ============================================
+
+        async function loadTreasuryData() {
+            const loading = document.getElementById('treasuryLoading');
+            const content = document.getElementById('treasuryContent');
+            loading.style.display = 'block';
+            content.style.display = 'none';
+
+            try {
+                const rpcProvider = provider || new ethers.JsonRpcProvider('https://eth-sepolia.g.alchemy.com/v2/ISqOLUfXDzgFu0-5ronlzwri_xFU4rZf');
+
+                // --- 1. Saldo ETH do TreasuryDAO ---
+                let treasuryEthBal = 0;
+                let multisigExpiryDate = '—';
+                const treasuryAddr = CONTRACTS.TREASURY_DAO;
+                const isValidTreasury = treasuryAddr && treasuryAddr !== '0x0000000000000000000000000000000000000000';
+
+                if (isValidTreasury) {
+                    try {
+                        const treasuryContract = new ethers.Contract(treasuryAddr, ABI_TREASURY_READ, rpcProvider);
+                        const ethBal = await treasuryContract.ethBalance();
+                        treasuryEthBal = parseFloat(ethers.formatEther(ethBal));
+
+                        const expiry = await treasuryContract.multisigExpiry();
+                        multisigExpiryDate = new Date(Number(expiry) * 1000).toLocaleDateString('pt-BR');
+                    } catch (e) {
+                        console.warn('Erro ao ler TreasuryDAO:', e);
+                    }
+                }
+
+                // --- 2. Saldo AGT do TreasuryDAO e Supply Total ---
+                let treasuryAgtBal = 0;
+                let agtTotalSupply = 0;
+                const agtAddr = CONTRACTS.AGT_TOKEN;
+                const isValidAgt = agtAddr && !agtAddr.startsWith('0x22345');
+
+                if (isValidAgt) {
+                    try {
+                        const agtContract = new ethers.Contract(agtAddr, ABI_AGT_READ, rpcProvider);
+                        if (isValidTreasury) {
+                            const bal = await agtContract.balanceOf(treasuryAddr);
+                            treasuryAgtBal = parseFloat(ethers.formatEther(bal));
+                        }
+                        const supply = await agtContract.totalSupply();
+                        agtTotalSupply = parseFloat(ethers.formatEther(supply));
+                    } catch (e) {
+                        console.warn('Erro ao ler AGTToken:', e);
+                    }
+                }
+
+                // --- 3. Total de campanhas registradas ---
+                let totalCampaigns = 0;
+                try {
+                    const factoryContract = new ethers.Contract(CONTRACTS.CAMPAIGN_FACTORY, ABI_CAMPAIGN_FACTORY_READ, rpcProvider);
+                    const count = await factoryContract.totalCampaigns();
+                    totalCampaigns = Number(count);
+                } catch (e) {
+                    console.warn('Erro ao ler totalCampaigns:', e);
+                }
+
+                // --- 4. Calcular USD ---
+                const ethUsdValue = treasuryEthBal * ethPrice;
+                const totalUsd = ethUsdValue; // AGT sem mercado secundário por enquanto
+
+                // --- Renderizar stats ---
+                document.getElementById('treasuryETH').textContent = `${treasuryEthBal.toFixed(4)} ETH`;
+                document.getElementById('treasuryAGT').textContent = `${treasuryAgtBal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} AGT`;
+                document.getElementById('treasuryUSD').textContent = `$${totalUsd.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                // --- Detalhamento ---
+                document.getElementById('treasuryETHDetail').textContent = `${treasuryEthBal.toFixed(6)} ETH`;
+                document.getElementById('treasuryAGTDetail').textContent = `${treasuryAgtBal.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} AGT`;
+                document.getElementById('treasuryAGTSupply').textContent = `${agtTotalSupply.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} AGT`;
+                document.getElementById('treasuryOraclePrice').textContent = `$${ethPrice.toLocaleString()}`;
+                document.getElementById('treasuryCampaignCount').textContent = totalCampaigns;
+                document.getElementById('treasuryMultisigExpiry').textContent = multisigExpiryDate;
+
+                // --- Fluxo de caixa ---
+                document.getElementById('treasuryInflows').textContent = `Saldo acumulado via taxas de plataforma (5%): ${treasuryEthBal.toFixed(4)} ETH (~$${ethUsdValue.toFixed(2)})`;
+                document.getElementById('treasuryOutflows').textContent = `Sem dispatches registrados no bloco atual.`;
+
+                // --- Links de contratos ---
+                const linksContainer = document.getElementById('treasuryContractLinks');
+                const contractList = [
+                    { icon: '📜', name: 'Treasury DAO', addr: CONTRACTS.TREASURY_DAO },
+                    { icon: '🏛️', name: 'ApoiaDAO', addr: CONTRACTS.APOIA_DAO },
+                    { icon: '🏭', name: 'CampaignFactory', addr: CONTRACTS.CAMPAIGN_FACTORY },
+                    { icon: '💎', name: 'AGT Token', addr: CONTRACTS.AGT_TOKEN },
+                    { icon: '🔒', name: 'StakingAGT', addr: CONTRACTS.STAKING_AGT },
+                    { icon: '📡', name: 'Chainlink ETH/USD', addr: CONTRACTS.CHAINLINK_FEED }
+                ];
+                linksContainer.innerHTML = contractList.map(c => {
+                    const isPlaceholder = !c.addr || c.addr.startsWith('0x22345') || c.addr.startsWith('0x42345') || c.addr === '0x0000000000000000000000000000000000000000';
+                    const shortAddr = c.addr ? `${c.addr.slice(0, 6)}...${c.addr.slice(-4)}` : '—';
+                    const etherscanLink = `https://sepolia.etherscan.io/address/${c.addr}`;
+                    return `
+                        <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(30,41,59,0.4); border-radius:8px; border:1px solid rgba(148,163,184,0.1);">
+                            <span style="font-size:18px;">${c.icon}</span>
+                            <div style="flex:1;">
+                                <div style="font-weight:600; font-size:13px; color:#f1f5f9;">${c.name}</div>
+                                <div style="font-size:11px; color:#60a5fa; font-family:monospace;">${shortAddr}</div>
+                            </div>
+                            ${isPlaceholder
+                            ? '<span style="font-size:11px; color:#fbbf24; background:rgba(251,191,36,0.1); padding:2px 8px; border-radius:4px;">⚠️ Placeholder</span>'
+                            : `<a href="${etherscanLink}" target="_blank" style="font-size:11px; color:#10b981; background:rgba(16,185,129,0.1); padding:4px 10px; border-radius:4px; text-decoration:none;">🔍 Etherscan</a>`
+                        }
+                        </div>
+                    `;
+                }).join('');
+
+                loading.style.display = 'none';
+                content.style.display = 'block';
+
+            } catch (error) {
+                console.error('Erro ao carregar Treasury:', error);
+                loading.innerHTML = '<div style="color:#ef4444;">❌ Falha ao carregar dados do Tesouro.</div>';
+            }
+        }
+
+        // ============================================
+        // SCREEN 08: CREATE CAMPAIGN
+        // ============================================
+
+        function loadCreateData() {
+            document.getElementById('createCampaignBtn').addEventListener('click', createNewCampaign);
+            const customizeBtn = document.getElementById('customizeTiersBtn');
+            if (customizeBtn) {
+                customizeBtn.addEventListener('click', openTiersModal);
+            }
+            renderTiers();
+
+            const startDateInput = document.getElementById('startDateInput');
+            const endDateInput = document.getElementById('endDateInput');
+            const nowIso = new Date().toISOString().slice(0, 16);
+
+            if (startDateInput) {
+                startDateInput.min = nowIso;
+                startDateInput.addEventListener('change', () => {
+                    const selectedStart = new Date(startDateInput.value);
+                    if (isNaN(selectedStart.getTime())) return;
+                    const minEnd = new Date(selectedStart.getTime() + 7 * 24 * 3600 * 1000);
+                    if (endDateInput) {
+                        endDateInput.min = minEnd.toISOString().slice(0, 16);
+                        if (endDateInput.value && new Date(endDateInput.value).getTime() < minEnd.getTime()) {
+                            endDateInput.value = '';
+                        }
+                    }
+                });
+            }
+
+            if (endDateInput) {
+                endDateInput.min = nowIso;
+            }
+        }
+
+        let customTiers = [
+            { name: '🥉 Bronze', minAmount: 0.1, bonus: 5 },
+            { name: '🥈 Prata', minAmount: 0.5, bonus: 10 },
+            { name: '🥇 Ouro', minAmount: 1.0, bonus: 15 }
+        ];
+
+        function openTiersModal() {
+            document.getElementById('tiersModal').classList.add('active');
+            renderTiersModal();
+        }
+
+        function closeTiersModal() {
+            document.getElementById('tiersModal').classList.remove('active');
+        }
+
+        function addTierToList() {
+            const name = document.getElementById('tierNameInput').value;
+            const minAmount = parseFloat(document.getElementById('tierMinAmountInput').value);
+            const bonus = parseInt(document.getElementById('tierBonusInput').value) || 0;
+
+            if (!name || isNaN(minAmount) || minAmount <= 0) {
+                alert("Por favor, preencha o nome e um valor mínimo válido.");
+                return;
+            }
+
+            customTiers.push({ name, minAmount, bonus });
+
+            document.getElementById('tierNameInput').value = '';
+            document.getElementById('tierMinAmountInput').value = '';
+            document.getElementById('tierBonusInput').value = '10';
+
+            renderTiersModal();
+        }
+
+        function renderTiersModal() {
+            const container = document.getElementById('tiersListModal');
+            if (!container) return;
+            container.innerHTML = '';
+            customTiers.forEach((tier, idx) => {
+                container.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size: 12px; color: #94a3b8; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; margin-top: 8px;">
+                        <span>${tier.name} (${tier.minAmount} ETH+) - Bonus: ${tier.bonus}%</span>
+                        <button onclick="removeTier(${idx})" style="background:transparent; border:none; color:#ef4444; cursor:pointer;">❌</button>
+                    </div>
+                `;
+            });
+        }
+
+        function removeTier(idx) {
+            customTiers.splice(idx, 1);
+            renderTiersModal();
+        }
+
+        function saveTiers() {
+            renderTiers();
+            closeTiersModal();
+        }
+
+        function renderTiers() {
+            const container = document.getElementById('tiersContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            customTiers.forEach(tier => {
+                container.innerHTML += `${tier.name} (${tier.minAmount} ETH+) - Bonus: ${tier.bonus}%<br>`;
+            });
+        }
+
+        async function createNewCampaign() {
+            if (!userAddress || !signer) {
+                alert('Por favor, conecte sua wallet primeiro');
+                return;
+            }
+
+            const name = document.getElementById('campaignNameInput').value;
+            const desc = document.getElementById('campaignDescInput').value;
+            const softCap = document.getElementById('softCapInput').value;
+            const hardCap = document.getElementById('hardCapInput').value;
+            const startDateRaw = document.getElementById('startDateInput').value;
+            const endDateRaw = document.getElementById('endDateInput').value;
+
+            if (!name || !desc || !softCap || !hardCap || !startDateRaw || !endDateRaw) {
+                alert('Por favor, preencha todos os campos obrigatórios, incluindo as datas.');
+                return;
+            }
+
+            try {
+                const statusDiv = document.getElementById('createStatus');
+                statusDiv.innerHTML = '<div class="tx-status pending show"><div class="spinner"></div> Assinando transação...</div>';
+
+                const factoryContract = new ethers.Contract(CONTRACTS.CAMPAIGN_FACTORY, ABI_CAMPAIGN_FACTORY, signer);
+
+                // Os campos no frontend são em ETH (ex: 2.0). O contrato espera USD com 8 decimais.
+                // Convertendo usando o oráculo mock:
+                const softCapUsd = BigInt(Math.floor(parseFloat(softCap) * ethPrice * 10 ** 8));
+                const hardCapUsd = BigInt(Math.floor(parseFloat(hardCap) * ethPrice * 10 ** 8));
+
+                // Processar datas
+                const nowSec = Math.floor(Date.now() / 1000);
+                const startTime = Math.floor(new Date(startDateRaw).getTime() / 1000);
+                const endTime = Math.floor(new Date(endDateRaw).getTime() / 1000);
+                const minDuration = 7 * 24 * 3600;
+
+                if (isNaN(startTime) || isNaN(endTime)) throw new Error('Data inválida');
+                if (startTime < nowSec) throw new Error('A data de início não pode ser no passado.');
+                if (endTime <= startTime) throw new Error('A data de término deve ser posterior à data de início.');
+                if (endTime < startTime + minDuration) throw new Error('O período da campanha deve ser de pelo menos 7 dias.');
+
+                // Base URI falso para armazenar dados no IPFS (metadata)
+                const baseURI = "ipfs://QmFakeMetadataUriForCampaignInfo/";
+                const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+                statusDiv.innerHTML = '<div class="tx-status pending show"><div class="spinner"></div> Assinando transação da Campaign...</div>';
+                const tx = await factoryContract.createCampaign(
+                    softCapUsd,
+                    hardCapUsd,
+                    BigInt(startTime),
+                    BigInt(endTime),
+                    baseURI,
+                    zeroAddress
+                );
+
+                statusDiv.innerHTML = '<div class="tx-status pending show"><div class="spinner"></div> Aguardando deploy da campanha na rede...</div>';
+
+                const receipt = await tx.wait();
+
+                let campaignAddress = null;
+                let tierManagerAddress = null;
+
+                for (const log of receipt.logs) {
+                    try {
+                        const parsed = factoryContract.interface.parseLog(log);
+                        if (parsed.name === 'CampaignCreated') {
+                            campaignAddress = parsed.args.campaign || parsed.args[0];
+                            tierManagerAddress = parsed.args.tierManager || parsed.args[1];
+                            break;
+                        }
+                    } catch (err) {
+                        // log não pertence ao factory
+                    }
+                }
+
+                if (!campaignAddress) {
+                    console.warn('Não foi possível obter campaignAddress do evento CampaignCreated');
+                }
+
+                if (campaignAddress) {
+                    statusDiv.innerHTML = '<div class="tx-status pending show"><div class="spinner"></div> Criando tiers e associando à campanha...</div>';
+                    const campaignContract = new ethers.Contract(campaignAddress, ABI_CAMPAIGN_READ, signer);
+
+                    // Verificar que o signer atual é o proponente da campanha
+                    try {
+                        const cfg = await campaignContract.config();
+                        const proponente = cfg.proponente || cfg[0];
+                        const caller = (await signer.getAddress()).toLowerCase();
+                        if ((String(proponente).toLowerCase()) !== caller) {
+                            console.error('Conta conectada não é o proponente da campanha:', { proponente, caller });
+                            statusDiv.innerHTML = `\n                        <div class="tx-status warning show">\n                            ⚠️ Campanha criada, mas a conta conectada (<strong>${caller}</strong>) não é o proponente (<strong>${proponente}</strong>).\n                            <br><small>Conecte a carteira correta para criar tiers automaticamente.</small>\n                        </div>`;
+                            return;
+                        }
+                    } catch (err) {
+                        console.warn('Não foi possível ler config() da campanha:', err);
+                    }
+
+                    for (let i = 0; i < customTiers.length; i++) {
+                        const tier = customTiers[i];
+                        const minAmountUsd = BigInt(Math.floor(tier.minAmount * ethPrice * 10 ** 8));
+                        const maxSupply = 0;
+                        const priceMode = 0;
+                        const metadataURI = baseURI;
+
+                        statusDiv.innerHTML = `<div class="tx-status pending show"><div class="spinner"></div> Criando tier ${i + 1}/${customTiers.length}: ${tier.name}...</div>`;
+                        const tierTx = await campaignContract.createTier(
+                            tier.name,
+                            minAmountUsd,
+                            maxSupply,
+                            priceMode,
+                            metadataURI
+                        );
+                        await tierTx.wait();
+                    }
+
+                    statusDiv.innerHTML = `
+                        <div class="tx-status success show">
+                            ✅ Campanha criada com sucesso! (ID Hash: <a href="https://sepolia.etherscan.io/tx/${receipt.hash}" target="_blank" style="color: #60a5fa">${receipt.hash.slice(0, 10)}...</a>)<br>
+                            <small>🎉 Tiers criados e associados a ${campaignAddress.slice(0, 10)}... com sucesso.</small>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="tx-status warning show">
+                            ⚠️ Campanha criada com sucesso, mas não foi possível extrair o endereço da campanha para criar os tiers automaticamente.<br>
+                            <small>Verifique o log de eventos ou atualize o ABI do CampaignCreated.</small>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("Erro ao criar campanha:", error);
+                document.getElementById('createStatus').innerHTML = `
+                    <div class="tx-status error show">❌ Erro: ${error.message || "A transação falhou"}</div>
+                `;
+            }
+        }
+
+        // ============================================
+        // USER DATA
+        // ============================================
+
+        function loadUserData() {
+            // Load user-specific data from blockchain
+            console.log('User connected:', userAddress);
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        loadHomeData();
+
+        // Mock ETH price update
+        setInterval(async () => {
+            ethPrice = 1800 + Math.random() * 400;
+            if (document.getElementById('ethPrice')) {
+                document.getElementById('ethPrice').textContent = `$${ethPrice.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+            }
+        }, 5000);
+    </script>
+</body>
+
+</html>

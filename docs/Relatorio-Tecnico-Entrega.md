@@ -9,11 +9,11 @@
 
 **Autor:** VALTER DE OLIVEIRA LOBO
 
-**Data:** 24/05/2026
+**Data:** 25/05/2026
 
 **Código-fonte:** [Apoia Protocolo - https://github.com/valterlobo/apoia-protocolo-web3](https://github.com/valterlobo/apoia-protocolo-web3)
 
-**Vídeo Demonstrativo:** [Apoia Protocolo Vídeo Demo](http://youtube.com/valterlobo)
+
 
 **Relatório de Auditoria:** [Segurança via Slither e Mythril.](https://github.com/valterlobo/apoia-protocolo-web3/blob/main/docs/RELATORIO_AUDITORIA_COMPLETO.md)
 
@@ -1092,38 +1092,94 @@ function testRevertStalePriceFeed() public {
 
 ---
 
-### 5.4 Resumo da Postura de Segurança
+### 5.4 Resumo da Auditoria de Segurança (Slither + Mythril + Foundry)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│           APOIA PROTOCOL — SECURITY POSTURE                 │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  THREAT MODEL: Reentrância, Oracle Manipulation, Overflow   │
-│                                                             │
-│  ┌──────────────────────┐  ┌──────────────────────┐         │
-│  │ Layer 1: Smart Contract │ Layer 2: Oracle      │         │
-│  │ ├─ CEI Pattern       │  ├─ Staleness Check     │         │
-│  │ ├─ Reentrancy Guard  │  ├─ Round Validation    │         │
-│  │ ├─ Access Control    │  ├─ Answer Validation   │         │
-│  │ └─ Pausable          │  └─ Fail-Safe           │         │
-│  └──────────────────────┘  └──────────────────────┘         │
-│                                                             │
-│  ┌──────────────────────┐  ┌──────────────────────┐         │
-│  │ Layer 3: Tests       │  │ Layer 4: Invariants  │         │
-│  │ ├─ 21/21 PASS        │  │ ├─ Balance ≥ Contrib │         │
-│  │ ├─ 92% Coverage      │  │ ├─ Status Consistency│         │
-│  │ ├─ Fuzzing           │  │ └─ No Double-Spend   │         │
-│  │ └─ Integration       │  │                      │         │
-│  └──────────────────────┘  └──────────────────────┘         │
-│                                                             │
-│  VERDICT:✅ SEGURO PARA PRODUÇÃO(sob auditoria profissional)│
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+#### 📊 Resumo Executivo
+
+| Dimensão            | Pontuação (0–10) | Status      |
+| ------------------- | ---------------- | ----------- |
+| Segurança           | 8.2              | ✅ Excelente |
+| Qualidade de código | 7.5              | ✅ Muito bom |
+| Otimização de gas   | 7.0              | ✅ Bom       |
+| Documentação        | 7.8              | ✅ Muito bom |
+| Centralização       | 6.5              | ⚠️ Moderada  |
+
+**Risco geral:** 7,6/10 – **baixo a moderado**
+
+| Severidade    | Quantidade | Status        |
+| ------------- | ---------- | ------------- |
+| 🔴 Crítica     | 0          | ✅ Nenhuma     |
+| 🟠 Alta        | 0          | ✅ Nenhuma     |
+| 🟡 Média       | 2          | ✅ Mitigadas   |
+| 🟢 Baixa       | 4          | ✅ Informativo |
+| ℹ️ Informativo | 3          | ✅ Sugestões   |
 
 ---
 
+#### 🔍 Principais Achados
+
+##### 🟡 Médias (mitigadas)
+
+1. **Centralização de funções administrativas** – `pause()`, `revokeVesting()` são `onlyOwner`. Aceitável em fase 1, com plano de descentralização para DAO na fase 2.
+2. **Validação de preço stale do oráculo** – `MAX_STALENESS = 1 hour` hardcoded, sem fallback. Proteção ativa (fail‑safe) – recomendado fallback oracle em futuras versões.
+
+##### 🟢 Baixas (informativo)
+
+- Eventos faltantes em algumas transições de estado
+- Uso de `memory` em vez de `calldata` (pequena ineficiência de gas)
+- NatSpec incompleto em interfaces
+- Números mágicos (ex: 500 bps) sem comentário inline
+
+##### ℹ️ Informativos
+
+- Sugestão de circuit breaker para limites por transação
+- Sugestão de função de resgate de tokens enviados acidentalmente
+- Recomendação de monitoramento on‑chain com alertas (Tenderly/Defender)
+
+---
+
+#### 🧪 Cobertura de Testes (Foundry)
+
+| Métrica    | Total  | Destaque             |
+| ---------- | ------ | -------------------- |
+| Linhas     | 49,42% | Campaign 92,24%      |
+| Statements | 46,51% | ChainlinkHelper 100% |
+| Branches   | 35,08% | VestingLib 100%      |
+| Funções    | 48,42% | Campaign 81,82%      |
+
+**Testes executados:** 21/21 aprovados (0 falhas)  
+**Fuzzing:** Invariante `balance ≥ contribution` validada (100+ execuções)  
+**Cenários críticos validados:** reentrância, hard cap, refund, stale price feed, vesting linear, pause/unpause, liquidação expirada – todos ✅
+
+---
+
+#### ✅ Recomendação Final
+
+**APROVADO PARA TESTNET COM RESSALVAS**
+
+**Justificativa:**  
+
+- Nenhuma vulnerabilidade crítica ou alta detectada.  
+- Proteções robustas contra reentrância (CEI + ReentrancyGuard), overflow (Solidity 0.8.20+), e oracle staleness.  
+- Cobertura de testes excelente nos contratos críticos (Campaign 92%).  
+
+**Pré‑requisitos para mainnet:**  
+
+- Implementar multisig para funções administrativas  
+- Elevar cobertura para 80%+ em ApoiaDAO e CampaignFactory  
+- Auditoria formal por firma especializada  
+- Bug bounty program  
+
+---
+
+#### 🔧 Ferramentas Utilizadas
+
+- **Slither** – análise estática, padrões SWC
+- **Mythril** – execução simbólica (8 issues detectadas, todas falsos positivos ou baixas)
+- **Foundry** – testes unitários, fuzzing, invariantes, coverage
+- **solc 0.8.34** – compilador com proteção automática contra overflow
+
+> 📎 **Relatório de auditoria completo** disponível no GitHub: [RELATORIO_AUDITORIA_COMPLETO.md](https://github.com/valterlobo/apoia-protocolo-web3/blob/main/docs/RELATORIO_AUDITORIA_COMPLETO.md)
 
 ## 6. Evidências de Deploy em Testnet e Scripts de Interação
 
@@ -1162,15 +1218,6 @@ function testRevertStalePriceFeed() public {
 
 **OBS:** **TierManager** , **Campaign** são criados no contrato **CampaignFactory** na criação de uma nova campanha.
 
-### 6.4 Evidências Visuais (Capturas de Tela)
-
-- [ ] **Print 1:** Página do contrato `AGTToken` no Etherscan mostrando o código verificado e o `totalSupply`.
-- [ ] **Print 2:** Evento `CampaignCreated` emitido pela `CampaignFactory` (com dados da campanha).
-- [ ] **Print 3:** Transação de `contribute()` com valores em ETH convertidos via Chainlink.
-- [ ] **Print 4:** Votação na `ApoiaDAO` (proposal criada e votos computados).
-
-> **Nota:** Inclua as imagens nesta seção ou em um apêndice, com legendas explicativas.
-
 
 ## 7. Scripts e Instruções de Interação (Frontend / CLI)
 
@@ -1182,7 +1229,7 @@ function testRevertStalePriceFeed() public {
 
 - MetaMask (ou outra carteira) conectada à **Sepolia**
 
-- Tokens de teste (Sepolia ETH) – obter em [faucet](https://sepoliafaucet.com/)
+- Tokens de teste (Sepolia ETH) – obter em [faucet](https://cloud.google.com/application/web3/faucet)
 
 - Variáveis de ambiente (`.env`):
 

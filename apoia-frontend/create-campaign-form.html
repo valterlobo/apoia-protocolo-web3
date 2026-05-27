@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Campanha com Tiers - APOIA Protocol</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: #60a5fa;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        /* Stepper */
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(96, 165, 250, 0.1);
+            z-index: 0;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 12px;
+            background: rgba(96, 165, 250, 0.1);
+            border: 2px solid rgba(96, 165, 250, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background: #60a5fa;
+            border-color: #60a5fa;
+            color: white;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+        }
+
+        .step.completed .step-number {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .step.active .step-label,
+        .step.completed .step-label {
+            color: #e2e8f0;
+        }
+
+        /* Forms */
+        .form-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 24px;
+        }
+
+        .form-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .form-label .required {
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #60a5fa;
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Tiers Section */
+        .tiers-container {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .tier-item {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .tier-item:hover {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: #60a5fa;
+        }
+
+        .tier-info {
+            flex: 1;
+        }
+
+        .tier-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .tier-details {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .tier-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 12px;
+        }
+
+        .tier-action-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .tier-action-btn:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: #60a5fa;
+        }
+
+        .tier-action-btn.danger {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .tier-action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .template-btn {
+            padding: 12px;
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 6px;
+            color: #60a5fa;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .template-btn:hover {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: #60a5fa;
+        }
+
+        .template-btn.active {
+            background: #60a5fa;
+            border-color: #60a5fa;
+            color: #0f172a;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #60a5fa;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3b82f6;
+        }
+
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #60a5fa;
+            color: #60a5fa;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+            flex: none;
+        }
+
+        /* Alert/Info Messages */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert.info {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .alert.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Summary */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            background: rgba(96, 165, 250, 0.05);
+            border-left: 3px solid #60a5fa;
+            padding: 16px;
+            border-radius: 4px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 28px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #f1f5f9;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #60a5fa, #10b981);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>✨ Criar Nova Campanha</h1>
+            <p class="subtitle">Sistema completo de crowdfunding descentralizado com tiers de recompensa</p>
+        </header>
+
+        <!-- Stepper -->
+        <div class="stepper">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Básico</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Financeiro</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Tiers</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Revisão</div>
+            </div>
+        </div>
+
+        <!-- Alert -->
+        <div class="alert info show" id="alert">
+            <span>ℹ️</span>
+            <span id="alertText">Preencha as informações básicas da sua campanha</span>
+        </div>
+
+        <!-- Step 1: Informações Básicas -->
+        <div class="form-section active" id="step1">
+            <div class="form-card">
+                <div class="form-title">📋 Informações Básicas</div>
+
+                <div class="form-group">
+                    <label class="form-label">Título da Campanha <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="campaignNameInput"
+                        placeholder="Ex: Plataforma de Educação Online">
+                    <div class="form-hint">Min. 3 caracteres</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descrição <span class="required">*</span></label>
+                    <textarea class="form-textarea" id="campaignDescInput"
+                        placeholder="Descreva sua campanha em detalhes. Explique o que você vai construir, para quem é, e como os fundos serão usados."></textarea>
+                    <div class="form-hint">Min. 20 caracteres</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Categoria <span class="required">*</span></label>
+                    <select class="form-select" id="categorySelect">
+                        <option value="">Selecione uma categoria...</option>
+                        <option value="Educação">📚 Educação</option>
+                        <option value="Tecnologia">💻 Tecnologia</option>
+                        <option value="Saúde">🏥 Saúde</option>
+                        <option value="Sustentabilidade">♻️ Sustentabilidade</option>
+                        <option value="Arte & Cultura">🎨 Arte & Cultura</option>
+                        <option value="Outro">🔹 Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="previousStep()">← Anterior</button>
+                <button class="btn btn-primary" onclick="nextStep()">Próximo →</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Informações Financeiras -->
+        <div class="form-section" id="step2">
+            <div class="form-card">
+                <div class="form-title">💰 Configuração Financeira</div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Soft Cap (ETH) <span class="required">*</span></label>
+                        <input type="number" class="form-input" id="softCapInput"
+                            placeholder="Mínimo necessário" min="0.1" step="0.1">
+                        <div class="form-hint">Valor mínimo para a campanha ter sucesso</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Hard Cap (ETH) <span class="required">*</span></label>
+                        <input type="number" class="form-input" id="hardCapInput"
+                            placeholder="Máximo de arrecadação" min="0.1" step="0.1">
+                        <div class="form-hint">Limite máximo de arrecadação</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Taxa de Plataforma</label>
+                    <input type="number" class="form-input" value="5" disabled placeholder="5%">
+                    <div class="form-hint">Taxa padrão cobrada pela plataforma</div>
+                </div>
+
+                <div class="alert info show">
+                    <span>💡</span>
+                    <span>Hard Cap deve ser maior que Soft Cap</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="previousStep()">← Anterior</button>
+                <button class="btn btn-primary" onclick="nextStep()">Próximo →</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Datas e Tiers -->
+        <div class="form-section" id="step3">
+            <div class="form-card">
+                <div class="form-title">📅 Período da Campanha</div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Data de Início <span class="required">*</span></label>
+                        <input type="datetime-local" class="form-input" id="startDateInput">
+                        <div class="form-hint">Não pode ser retroativa</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Data de Encerramento <span class="required">*</span></label>
+                        <input type="datetime-local" class="form-input" id="endDateInput">
+                        <div class="form-hint">Mínimo 7 dias após início</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-title">🎁 Tiers de Recompensa</div>
+
+                <div class="form-group">
+                    <label class="form-label">Usar Template Pré-configurado</label>
+                    <div class="templates">
+                        <button class="template-btn active" onclick="selectTemplate('standard')">
+                            Standard
+                        </button>
+                        <button class="template-btn" onclick="selectTemplate('minimal')">
+                            Minimal
+                        </button>
+                        <button class="template-btn" onclick="selectTemplate('premium')">
+                            Premium
+                        </button>
+                        <button class="template-btn" onclick="selectTemplate('elite')">
+                            Elite
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tiers-container">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: #10b981;">✅ Tiers Configurados</div>
+                    <div id="tiersListDisplay"></div>
+                </div>
+
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;"
+                    onclick="openAddTierModal()">
+                    ➕ Adicionar Tier Customizado
+                </button>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="previousStep()">← Anterior</button>
+                <button class="btn btn-primary" onclick="nextStep()">Próximo →</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Revisão -->
+        <div class="form-section" id="step4">
+            <div class="form-card">
+                <div class="form-title">✅ Revisão Final</div>
+
+                <div id="summaryContainer"></div>
+
+                <div class="alert warning show">
+                    <span>⚠️</span>
+                    <span>Verifique todos os dados antes de criar. Após criada, a campanha será submetida para votação DAO.</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="previousStep()">← Anterior</button>
+                <button class="btn btn-primary" id="createBtn" onclick="createCampaign()">
+                    🚀 Criar Campanha
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal para adicionar tier customizado -->
+        <div class="modal-overlay" id="tierModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <span>🎁 Adicionar Tier Customizado</span>
+                    <button class="modal-close" onclick="closeAddTierModal()">&times;</button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nome do Tier <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="tierNameInput" placeholder="Ex: Bronze, Prata, Ouro">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Valor Mínimo (USD) <span class="required">*</span></label>
+                    <input type="number" class="form-input" id="tierMinAmountInput" placeholder="Ex: 100" min="1" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Bônus AGT (%)</label>
+                    <input type="number" class="form-input" id="tierBonusInput" placeholder="Ex: 10" min="0" max="500" value="10">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Supply Máximo</label>
+                    <input type="number" class="form-input" id="tierMaxSupplyInput" placeholder="Ex: 1000" min="1" value="1000">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="closeAddTierModal()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="addNewTier()">Adicionar Tier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>APOIA Protocol © 2026 | Sistema descentralizado de crowdfunding com Web3</p>
+    </footer>
+
+    <script src="create-campaign-with-tiers.js"></script>
+    <script>
+        let currentStep = 1;
+        let selectedTemplate = 'standard';
+
+        function updateStepper() {
+            document.querySelectorAll('.step').forEach(step => {
+                const stepNum = parseInt(step.dataset.step);
+                step.classList.remove('active', 'completed');
+                if (stepNum === currentStep) {
+                    step.classList.add('active');
+                } else if (stepNum < currentStep) {
+                    step.classList.add('completed');
+                }
+            });
+
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextStep() {
+            if (currentStep < 4) {
+                currentStep++;
+                if (currentStep === 3) {
+                    loadTierTemplate(selectedTemplate);
+                    updateTiersDisplay();
+                } else if (currentStep === 4) {
+                    showCampaignSummary();
+                }
+                updateStepper();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepper();
+            }
+        }
+
+        function selectTemplate(template) {
+            selectedTemplate = template;
+            document.querySelectorAll('.template-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadTierTemplate(template);
+            updateTiersDisplay();
+        }
+
+        function updateTiersDisplay() {
+            const container = document.getElementById('tiersListDisplay');
+            container.innerHTML = '';
+            campaignCreationState.tiers.forEach((tier, index) => {
+                const tierHTML = `
+                    <div class="tier-item">
+                        <div class="tier-info">
+                            <div class="tier-name">${tier.icon} ${tier.name}</div>
+                            <div class="tier-details">
+                                $${tier.minAmountUSD.toFixed(2)} USD+ | +${tier.bonus}% bonus | ${tier.maxSupply} slots
+                            </div>
+                        </div>
+                        <div class="tier-actions">
+                            <button class="tier-action-btn btn-sm" onclick="editTier(${index})">✏️ Editar</button>
+                            <button class="tier-action-btn danger btn-sm" onclick="removeTier(${index})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += tierHTML;
+            });
+        }
+
+        function openAddTierModal() {
+            document.getElementById('tierModal').classList.add('active');
+        }
+
+        function closeAddTierModal() {
+            document.getElementById('tierModal').classList.remove('active');
+            document.getElementById('tierNameInput').value = '';
+            document.getElementById('tierMinAmountInput').value = '';
+            document.getElementById('tierBonusInput').value = '10';
+            document.getElementById('tierMaxSupplyInput').value = '1000';
+        }
+
+        function addNewTier() {
+            addTierToList();
+            updateTiersDisplay();
+            closeAddTierModal();
+        }
+
+        function showCampaignSummary() {
+            const summary = getCampaignSummary();
+            const container = document.getElementById('summaryContainer');
+
+            let html = `
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">Campanha</div>
+                        <div class="summary-value">${summary.nome}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Categoria</div>
+                        <div class="summary-value">${summary.categoria}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Soft Cap</div>
+                        <div class="summary-value">${summary.softCap}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Hard Cap</div>
+                        <div class="summary-value">${summary.hardCap}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Início</div>
+                        <div class="summary-value" style="font-size: 14px;">${summary.inicio}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Fim</div>
+                        <div class="summary-value" style="font-size: 14px;">${summary.fim}</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(16, 185, 129, 0.05); padding: 16px; border-radius: 8px; border-left: 3px solid #10b981; margin-bottom: 16px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: #10b981;">🎁 Tiers (${summary.tiers})</div>
+                    ${summary.tiersDetalhes.map(tier => `<div style="padding: 4px 0;">• ${tier}</div>`).join('')}
+                </div>
+
+                <div style="background: rgba(96, 165, 250, 0.05); padding: 16px; border-radius: 8px; border-left: 3px solid #60a5fa;">
+                    <div style="font-size: 14px; color: #e2e8f0; line-height: 1.6;">
+                        📝 ${summary.descricao.substring(0, 150)}${summary.descricao.length > 150 ? '...' : ''}
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function createCampaign() {
+            const btn = document.getElementById('createBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Criando...';
+            createCampaignOnBlockchain();
+        }
+
+        // Sincronizar campos com o estado global
+        document.getElementById('campaignNameInput')?.addEventListener('change', e => {
+            updateCampaignField('name', e.target.value);
+        });
+        document.getElementById('campaignDescInput')?.addEventListener('change', e => {
+            updateCampaignField('description', e.target.value);
+        });
+        document.getElementById('categorySelect')?.addEventListener('change', e => {
+            updateCampaignField('category', e.target.value);
+        });
+        document.getElementById('softCapInput')?.addEventListener('change', e => {
+            updateCampaignField('softCapETH', parseFloat(e.target.value) || 0);
+        });
+        document.getElementById('hardCapInput')?.addEventListener('change', e => {
+            updateCampaignField('hardCapETH', parseFloat(e.target.value) || 0);
+        });
+        document.getElementById('startDateInput')?.addEventListener('change', e => {
+            updateCampaignField('startDate', new Date(e.target.value));
+        });
+        document.getElementById('endDateInput')?.addEventListener('change', e => {
+            updateCampaignField('endDate', new Date(e.target.value));
+        });
+
+        // Inicializar
+        loadTierTemplate('standard');
+        updateTiersDisplay();
+    </script>
+</body>
+</html>

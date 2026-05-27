@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APOIA Protocol - Quick Start</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Courier New', monospace;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #1e293b;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            padding: 40px;
+        }
+
+        h1, h2, h3 {
+            color: #60a5fa;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 20px;
+            border-bottom: 2px solid #60a5fa;
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #10b981;
+            margin-top: 16px;
+        }
+
+        code {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #60a5fa;
+            font-size: 13px;
+        }
+
+        pre {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .example {
+            background: rgba(16, 185, 129, 0.05);
+            border-left: 3px solid #10b981;
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: rgba(251, 191, 36, 0.05);
+            border-left: 3px solid #fbbf24;
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #60a5fa;
+            color: #0f172a;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 8px 8px 8px 0;
+        }
+
+        .button:hover {
+            background: #3b82f6;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        th {
+            background: rgba(96, 165, 250, 0.1);
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .console {
+            background: #000;
+            color: #10b981;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 8px 0;
+        }
+
+        a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 APOIA Protocol - Quick Start Guide</h1>
+
+        <div class="section">
+            <h2>📋 Índice</h2>
+            <ol>
+                <li><a href="#setup">Setup Inicial</a></li>
+                <li><a href="#conectar">Conectar Wallet</a></li>
+                <li><a href="#campanhas">Trabalhar com Campanhas</a></li>
+                <li><a href="#tokens">Gerenciar Tokens AGT</a></li>
+                <li><a href="#staking">Fazer Stake</a></li>
+                <li><a href="#governance">Votar na DAO</a></li>
+                <li><a href="#debug">Debug & Troubleshooting</a></li>
+            </ol>
+        </div>
+
+        <!-- SETUP -->
+        <div class="section" id="setup">
+            <h2>1️⃣ Setup Inicial</h2>
+
+            <h3>Pré-requisitos</h3>
+            <ul>
+                <li>MetaMask instalado (ou outro wallet Web3)</li>
+                <li>Navegador moderno (Chrome, Firefox, Edge, Brave)</li>
+                <li>Sepolia ETH para gas (testnet)</li>
+            </ul>
+
+            <h3>Instalação</h3>
+            <ol>
+                <li>Clone o repositório</li>
+                <li>Copie os endereços dos contratos para <code>web3-integration.js</code></li>
+                <li>Abra <code>apoia-protocol-frontend.html</code> no navegador</li>
+            </ol>
+
+            <h3>Configurar Endereços dos Contratos</h3>
+            <pre>&lt;script&gt;
+// web3-integration.js - Linha ~20
+
+const contractAddresses = {
+    campaignFactory: '0x...', // Seu contrato em Sepolia
+    agtToken: '0x...',
+    apoiaDAO: '0x...',
+    stakingAGT: '0x...',
+    tierManager: '0x...',
+    chainlinkFeed: '0x...'
+};
+&lt;/script&gt;</pre>
+
+            <div class="example">
+                <strong>💡 Dica:</strong> Use os endereços do Sepolia testnet. Para mainnet, atualize após auditoria formal.
+            </div>
+        </div>
+
+        <!-- CONECTAR -->
+        <div class="section" id="conectar">
+            <h2>2️⃣ Conectar Wallet</h2>
+
+            <h3>Código JavaScript</h3>
+            <pre>// Criar instância do Web3Manager
+const web3 = new Web3Manager();
+
+// Conectar wallet
+document.getElementById('connectBtn').addEventListener('click', async () => {
+    try {
+        const address = await web3.connectWallet();
+        console.log('✅ Conectado:', address);
+        
+        // Agora você pode usar os contratos
+        console.log('🌐 Rede:', web3.network.name);
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+});
+
+// Desconectar (opcional)
+function desconectar() {
+    web3.disconnectWallet();
+    console.log('✅ Desconectado');
+}</pre>
+
+            <h3>Verificar Conexão</h3>
+            <pre>if (web3.isConnected()) {
+    console.log('Você está conectado em:', web3.getAddress());
+    console.log('Rede:', web3.network.name);
+} else {
+    console.log('Wallet não conectado');
+}</pre>
+
+            <div class="example">
+                <strong>💡 Dica:</strong> Sempre verifique se está na rede correta (Sepolia para testnet).
+            </div>
+        </div>
+
+        <!-- CAMPANHAS -->
+        <div class="section" id="campanhas">
+            <h2>3️⃣ Trabalhar com Campanhas</h2>
+
+            <h3>Criar uma Nova Campanha</h3>
+            <pre>const campaignManager = new CampaignManager(web3);
+
+async function criarCampanha() {
+    try {
+        const receipt = await campaignManager.createCampaign(
+            "Educação Descentralizada",     // title
+            "Plataforma de educação online com blockchain",
+            10,                              // softCap (ETH)
+            50,                              // hardCap (ETH)
+            Date.now() + 90 * 24 * 60 * 60 * 1000 // deadline (90 dias)
+        );
+        
+        console.log('✅ Campanha criada:', receipt.hash);
+        return receipt;
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+criarCampanha();</pre>
+
+            <h3>Contribuir para uma Campanha</h3>
+            <pre>async function contribuir() {
+    try {
+        // 1. Validar preço do oráculo
+        const oracle = new OracleManager(web3);
+        const priceData = await oracle.getLatestPrice();
+        
+        if (!priceData.isFresh) {
+            console.warn('⚠️ Preço stale, aguarde atualização');
+            return;
+        }
+        
+        console.log('📊 Preço ETH/USD:', priceData.price);
+        
+        // 2. Contribuir
+        const campaignAddress = '0x...'; // Endereço da campanha
+        const amount = 0.5; // ETH
+        
+        const receipt = await campaignManager.contributeToCampaign(
+            campaignAddress,
+            amount
+        );
+        
+        console.log('✅ Contribuição confirmada:', receipt.hash);
+        console.log('🎁 Você receberá NFT em breve!');
+        
+        return receipt;
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+contribuir();</pre>
+
+            <h3>Buscar Detalhes da Campanha</h3>
+            <pre>async function buscarDetalhes(campaignAddress) {
+    try {
+        const details = await campaignManager.getCampaignDetails(campaignAddress);
+        
+        console.log('📋 Detalhes da Campanha:');
+        console.log('Título:', details.title);
+        console.log('Criador:', details.creator);
+        console.log('Soft Cap:', details.softCap, 'ETH');
+        console.log('Hard Cap:', details.hardCap, 'ETH');
+        console.log('Arrecadado:', details.raised, 'ETH');
+        
+        const progress = (details.raised / details.hardCap * 100).toFixed(1);
+        console.log('Progresso:', progress + '%');
+        
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+buscarDetalhes('0x...');</pre>
+
+            <h3>Campanhas do Usuário</h3>
+            <pre>async function minhasCampanhas() {
+    try {
+        const campaigns = await campaignManager.getCampaignsByUser(
+            web3.userAddress
+        );
+        
+        console.log('Você criou', campaigns.length, 'campanhas');
+        campaigns.forEach((addr, idx) => {
+            console.log(`[${idx + 1}] ${addr}`);
+        });
+        
+        return campaigns;
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+minhasCampanhas();</pre>
+
+            <div class="warning">
+                <strong>⚠️ Atenção:</strong> Verifique sempre o preço do oráculo antes de contribuir. Se estiver stale (>1 hora), aguarde atualização.
+            </div>
+        </div>
+
+        <!-- TOKENS -->
+        <div class="section" id="tokens">
+            <h2>4️⃣ Gerenciar Tokens AGT</h2>
+
+            <h3>Verificar Saldo</h3>
+            <pre>const tokenManager = new TokenManager(web3);
+
+async function verificarSaldo() {
+    try {
+        const balance = await tokenManager.getBalance();
+        console.log('💎 Seu saldo AGT:', balance);
+        
+        // Saldo de outro usuário
+        const outroSaldo = await tokenManager.getBalance('0xabcd...efgh');
+        console.log('Saldo de outro:', outroSaldo);
+        
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+verificarSaldo();</pre>
+
+            <h3>Transferir Tokens</h3>
+            <pre>async function transferir() {
+    try {
+        const recipient = '0xabcd...efgh';
+        const amount = 1000; // AGT
+        
+        const receipt = await tokenManager.transfer(recipient, amount);
+        
+        console.log('✅ Transferência confirmada');
+        console.log('Hash:', receipt.hash);
+        
+        return receipt;
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+transferir();</pre>
+
+            <h3>Aprovar Spend de Tokens</h3>
+            <pre>async function aprovarSpend() {
+    try {
+        const spender = '0x4234567890123456789012345678901234567893'; // Staking
+        const amount = 50000; // AGT
+        
+        const receipt = await tokenManager.approve(spender, amount);
+        
+        console.log('✅ Spend aprovado para:', spender);
+        console.log('Quantidade:', amount, 'AGT');
+        
+        return receipt;
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+aprovarSpend();</pre>
+
+            <h3>Vesting de AGT</h3>
+            <pre>// Criar vesting (apenas minter)
+async function criarVesting() {
+    try {
+        const receipt = await tokenManager.createVestingSchedule(
+            '0xabcd...efgh',              // beneficiary
+            100000,                        // amount AGT
+            30 * 24 * 60 * 60,            // cliff (30 dias)
+            365 * 24 * 60 * 60            // duration (1 ano linear)
+        );
+        
+        console.log('✅ Vesting criado:', receipt.hash);
+        console.log('Beneficiary poderá resgatar após 30 dias');
+        
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+// Liberar vesting (beneficiary ou owner)
+async function liberarVesting() {
+    try {
+        const receipt = await tokenManager.releaseVesting('0xabcd...efgh');
+        
+        console.log('✅ Vesting liberado:', receipt.hash);
+        console.log('AGT disponível na wallet');
+        
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+criarVesting();
+// Após 30 dias...
+liberarVesting();</pre>
+
+            <div class="example">
+                <strong>💡 Dica:</strong> Sempre aprove spend antes de fazer stake. Use números exatos (sem decimais para AGT).
+            </div>
+        </div>
+
+        <!-- STAKING -->
+        <div class="section" id="staking">
+            <h2>5️⃣ Fazer Stake de AGT</h2>
+
+            <h3>Flow Completo de Staking</h3>
+            <pre>const stakingManager = new StakingManager(web3);
+
+async function stakeFlow() {
+    try {
+        // 1. Aprovar tokens
+        console.log('📝 Etapa 1: Aprovando 50,000 AGT...');
+        await tokenManager.approve(
+            '0x4234567890123456789012345678901234567893', // Staking
+            50000
+        );
+        console.log('✅ Aprovado');
+        
+        // 2. Fazer stake por 180 dias
+        console.log('📝 Etapa 2: Fazendo stake...');
+        const receipt = await stakingManager.stake(
+            50000,                  // amount
+            180 * 24 * 60 * 60      // duration (180 dias)
+        );
+        console.log('✅ Staked:', receipt.hash);
+        
+        // 3. Verificar informações
+        console.log('📝 Etapa 3: Obtendo informações...');
+        const stakedAmount = await stakingManager.getStakedAmount();
+        console.log('Amount staked:', stakedAmount, 'AGT');
+        
+        const multiplier = await stakingManager.getVotingMultiplier();
+        console.log('Voting multiplier:', multiplier, 'x');
+        
+        const rewards = await stakingManager.calculateReward();
+        console.log('Rewards disponíveis:', rewards, 'AGT');
+        
+        return receipt;
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+stakeFlow();</pre>
+
+            <h3>Resgatar Rewards</h3>
+            <pre>async function resgatarRewards() {
+    try {
+        // Verificar rewards pendentes
+        const rewards = await stakingManager.calculateReward();
+        console.log('💰 Rewards disponíveis:', rewards, 'AGT');
+        
+        if (parseFloat(rewards) > 0) {
+            // Resgatar
+            const receipt = await stakingManager.claim();
+            console.log('✅ Rewards resgatados:', receipt.hash);
+        } else {
+            console.log('⏳ Nenhum reward disponível ainda');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+resgatarRewards();</pre>
+
+            <h3>Desfazer Stake</h3>
+            <pre>async function desfarzeStake() {
+    try {
+        const receipt = await stakingManager.unstake();
+        console.log('✅ Stake removido:', receipt.hash);
+        console.log('AGT retornado à sua wallet');
+        
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+desfarzeStake();</pre>
+
+            <table>
+                <tr>
+                    <th>Duração</th>
+                    <th>Multiplicador</th>
+                    <th>Caso de Uso</th>
+                </tr>
+                <tr>
+                    <td>30 dias</td>
+                    <td>1.5x</td>
+                    <td>Curto prazo, mais flexível</td>
+                </tr>
+                <tr>
+                    <td>90 dias</td>
+                    <td>2.0x</td>
+                    <td>Médio prazo</td>
+                </tr>
+                <tr>
+                    <td>180 dias</td>
+                    <td>2.5x</td>
+                    <td>Longo prazo, máximo prêmio</td>
+                </tr>
+                <tr>
+                    <td>365 dias</td>
+                    <td>3.0x</td>
+                    <td>Máximo comprometimento</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- GOVERNANCE -->
+        <div class="section" id="governance">
+            <h2>6️⃣ Votar na DAO</h2>
+
+            <h3>Votar em Proposta</h3>
+            <pre>const daoManager = new DAOManager(web3);
+
+async function votarNaProposta() {
+    try {
+        // Verificar seu poder de voto
+        const votingPower = await stakingManager.getVotingMultiplier();
+        console.log('🗳️ Seu poder de voto: ' + votingPower + 'x');
+        
+        // Votar
+        // 0 = Contra, 1 = A Favor, 2 = Abstenção
+        const proposalId = 1;
+        const support = 1; // A Favor
+        
+        const receipt = await daoManager.castVote(proposalId, support);
+        console.log('✅ Voto confirmado:', receipt.hash);
+        
+        return receipt;
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+votarNaProposta();</pre>
+
+            <h3>Criar Proposta</h3>
+            <pre>async function criarProposta() {
+    try {
+        // Exemplo: Aumentar taxa para 6%
+        const targets = ['0x1234...5678']; // Contrato alvo
+        const values = [0]; // Sem ETH
+        
+        // Encoded function call: setFee(600)
+        const calldatas = ['0x...'];
+        
+        const description = 'Aumentar taxa de plataforma de 5% para 6%';
+        
+        const receipt = await daoManager.propose(
+            targets,
+            values,
+            calldatas,
+            description
+        );
+        
+        console.log('✅ Proposta criada:', receipt.hash);
+        
+        return receipt;
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+criarProposta();</pre>
+
+            <h3>Verificar Estado da Proposta</h3>
+            <pre>async function verificarProposta() {
+    try {
+        const proposalId = 1;
+        
+        // Estado
+        const state = await daoManager.getProposalState(proposalId);
+        console.log('Estado:', state);
+        
+        // Detalhes
+        const details = await daoManager.getProposalDetails(proposalId);
+        console.log('Descrição:', details.description);
+        console.log('Votos a favor:', details.forVotes);
+        console.log('Votos contra:', details.againstVotes);
+        
+        const total = parseFloat(details.forVotes) + parseFloat(details.againstVotes);
+        const percentual = (parseFloat(details.forVotes) / total * 100).toFixed(1);
+        console.log('Aprovação:', percentual + '%');
+        
+    } catch (error) {
+        console.error('❌ Erro:', error.message);
+    }
+}
+
+verificarProposta();</pre>
+
+            <div class="example">
+                <strong>💡 Dica:</strong> Quanto maior seu stake, maior seu poder de voto. Combine isso com multiplicadores (1.5x - 3.0x) para máxima influência.
+            </div>
+        </div>
+
+        <!-- DEBUG -->
+        <div class="section" id="debug">
+            <h2>7️⃣ Debug & Troubleshooting</h2>
+
+            <h3>Verificar Tudo</h3>
+            <pre>async function debugTudo() {
+    console.group('🔍 DEBUG - Status Completo');
+    
+    try {
+        // Conexão
+        console.log('✅ Conectado:', web3.isConnected());
+        console.log('🔐 Endereço:', web3.userAddress);
+        console.log('🌐 Rede:', web3.network.name);
+        
+        // Saldos
+        const balance = await tokenManager.getBalance();
+        console.log('💎 Saldo AGT:', balance);
+        
+        // Staking
+        const staked = await stakingManager.getStakedAmount();
+        const multiplier = await stakingManager.getVotingMultiplier();
+        console.log('💰 AGT Staked:', staked);
+        console.log('🗳️ Multiplicador:', multiplier);
+        
+        // Oráculo
+        const priceData = await new OracleManager(web3).getLatestPrice();
+        console.log('📊 Preço ETH/USD:', priceData.price);
+        console.log('⏰ Fresco:', priceData.isFresh);
+        
+        console.groupEnd();
+    } catch (error) {
+        console.error('❌ Erro no debug:', error);
+    }
+}
+
+debugTudo();</pre>
+
+            <h3>Problemas Comuns</h3>
+            <pre>// ❌ Erro: "Wallet não conectado"
+// ✅ Solução:
+await web3.connectWallet();
+
+// ❌ Erro: "Preço stale"
+// ✅ Solução:
+const priceData = await oracle.getLatestPrice();
+if (!priceData.isFresh) {
+    console.log('Aguarde atualização do Chainlink (máx 1h)');
+}
+
+// ❌ Erro: "Insufficient balance"
+// ✅ Solução:
+const balance = await tokenManager.getBalance();
+if (balance < amountNeeded) {
+    console.log('Saldo insuficiente. Precisa de:', amountNeeded);
+}
+
+// ❌ Erro: "Rede incorreta"
+// ✅ Solução:
+if (web3.network.name !== 'sepolia') {
+    console.log('Mude para Sepolia testnet');
+}
+
+// ❌ Erro: "Transação pendente"
+// ✅ Solução:
+// Aguarde a transação anterior completar
+await receipt.wait();</pre>
+
+            <h3>Logs Detalhados</h3>
+            <pre>// Ativar logs detalhados
+function enableDebugLogs() {
+    const originalLog = console.log;
+    
+    console.log = function(...args) {
+        const timestamp = new Date().toLocaleTimeString();
+        originalLog(`[${timestamp}]`, ...args);
+    };
+}
+
+enableDebugLogs();
+
+// Agora todos os logs incluirão timestamp
+console.log('Ação realizada');</pre>
+        </div>
+
+        <!-- RECURSOS -->
+        <div class="section">
+            <h2>📚 Recursos Adicionais</h2>
+            <ul>
+                <li><a href="FRONTEND-GUIDE.md">Guia Completo do Frontend</a></li>
+                <li><a href="../docs/RELATORIO_AUDITORIA_COMPLETO.md">Relatório de Auditoria</a></li>
+                <li><a href="../ARCHITECTURE.md">Arquitetura Técnica</a></li>
+                <li><a href="https://docs.ethers.org/v6/">Ethers.js v6 Docs</a></li>
+                <li><a href="https://metamask.io/download/">MetaMask</a></li>
+                <li><a href="https://sepoliafaucet.com/">Sepolia Faucet</a></li>
+            </ul>
+        </div>
+
+        <!-- PRÓXIMOS PASSOS -->
+        <div class="section">
+            <h2>🎯 Próximos Passos</h2>
+            <ol>
+                <li>✅ Setup inicial completo</li>
+                <li>✅ Testado em Sepolia testnet</li>
+                <li>⏳ Deploy em mainnet (após auditoria)</li>
+                <li>⏳ Integração The Graph (Subgraph)</li>
+                <li>⏳ Mobile app (React Native)</li>
+            </ol>
+
+            <div class="example" style="margin-top: 20px; text-align: center;">
+                <button class="button" onclick="alert('Frontend integrado com ethers.js v6\n\nPróxima etapa:\nTeste em Sepolia testnet')">
+                    ✅ Iniciar
+                </button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(148, 163, 184, 0.1); color: #94a3b8;">
+            <p>APOIA Protocol v1.0</p>
+            <p style="font-size: 12px; margin-top: 8px;">Para suporte, consulte a documentação completa</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.ethers.io/v6/ethers.umd.min.js"></script>
+    <script src="web3-integration.js"></script>
+</body>
+</html>
